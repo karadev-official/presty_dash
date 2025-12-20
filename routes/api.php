@@ -27,7 +27,7 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('get-users', function (Request $request) {
+        Route::get('/users', function (Request $request) {
             $users = User::all();
             return response()->json([
                 'users' => $users,

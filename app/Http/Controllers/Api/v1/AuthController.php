@@ -22,6 +22,16 @@ class AuthController extends Controller
             'password' => Hash::make($credentials['password']),
         ]);
 
+        $authorizeRole = ['customer', 'pro'];
+
+        if (isset($credentials['register_role']) && in_array($credentials['register_role'], $authorizeRole)) {
+            $user->assignRole($credentials['register_role']);
+        } else {
+            return response()->json([
+                'message' => 'Une erreur est survenue, veuillez nous contacter si le problème persiste.'
+            ], 403);
+        }
+
         $token = $user->createToken($credentials['device_name'])->plainTextToken;
         return response()->json([
             'user' => $this->userPayload($user),
@@ -40,6 +50,12 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Les informations de connexion sont invalides.'
             ], 401);
+        }
+
+        if (isset($credentials['login_role']) && !$user->hasRole($credentials['login_role'])) {
+            return response()->json([
+                'message' => 'Les informations de connexion sont invalides.'
+            ], 403);
         }
 
         $token = $user->createToken($credentials['device_name'])->plainTextToken;
@@ -70,6 +86,7 @@ class AuthController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'role' => $user->roles->first()?->name ?? null,
             'created_at' => $user->created_at?->toISOString(),
         ];
     }
