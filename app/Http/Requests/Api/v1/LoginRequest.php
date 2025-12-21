@@ -24,7 +24,7 @@ class LoginRequest extends FormRequest
         return [
             'email' => 'required|string|email',
             'password' => 'required|string',
-            'login_role' => 'nullable|in:admin,customer,pro',
+            'login_role' => 'nullable|in:customer,pro',
             'device_name' => 'required|string',
         ];
     }

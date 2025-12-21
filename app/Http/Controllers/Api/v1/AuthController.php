@@ -54,7 +54,7 @@ class AuthController extends Controller
 
         if (isset($credentials['login_role']) && !$user->hasRole($credentials['login_role'])) {
             return response()->json([
-                'message' => 'Les informations de connexion sont invalides.'
+                'message' => 'Vous tentez de vous connecter dans le mauvais espace (client/professionnel).'
             ], 403);
         }
 
