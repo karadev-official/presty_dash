@@ -13,6 +13,7 @@ class ServiceCategory extends Model
     protected $fillable = [
         'name',
         'slug',
+        'user_id',
         'is_active',
         'is_online',
         'position',
@@ -27,5 +28,10 @@ class ServiceCategory extends Model
     public function services()
     {
         return $this->hasMany(Service::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

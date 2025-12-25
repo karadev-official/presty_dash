@@ -47,6 +47,9 @@ Route::prefix('v1')->group(function () {
 
         // CategoriesService routes
         Route::get('/service-categories', [ServiceCategoryController::class, 'index']);
+        Route::get('/service-categories/{category}', [ServiceCategoryController::class, 'show']);
+        Route::post('/service-categories', [ServiceCategoryController::class, 'store']);
+
 
         // CRUD groupes + options
         Route::get('/option-groups', [OptionGroupController::class, 'index']);

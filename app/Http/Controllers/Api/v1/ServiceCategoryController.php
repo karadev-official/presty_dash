@@ -24,6 +24,52 @@ class ServiceCategoryController extends Controller
         );
     }
 
+    public function show(Request $request, ServiceCategory $category)
+    {
+        abort_unless($category->user_id === $request->user()->id, 404);
+
+        $category->load('services.optionGroups.options');
+
+        return response()->json(
+            [
+                'category' => $this->ServiceCategoryPayload($category)
+            ]
+        );
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255'],
+            'is_active' => ['sometimes', 'boolean'],
+            'is_online' => ['sometimes', 'boolean'],
+            'position' => ['sometimes', 'integer', 'min:0'],
+            'agenda_color' => ['sometimes', 'string', 'max:7'],
+        ]);
+
+        // vérifier unicité du slug par pro
+        $exists = ServiceCategory::where('user_id', $request->user()->id)
+            ->where('slug', $data['slug'])
+            ->exists();
+
+        if ($exists) {
+            return response()->json(['message' => 'La catégorie existe déjà.'], 422);
+        }
+
+        $category = ServiceCategory::create([
+            'user_id' => $request->user()->id,
+            ...$data,
+        ]);
+
+        return response()->json(
+            [
+                'category' => $this->ServiceCategoryPayload($category)
+            ],
+            201
+        );
+    }
+
     public function ServiceCategoryPayload(ServiceCategory $category)
     {
         return [
