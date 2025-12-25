@@ -28,6 +28,7 @@ Route::prefix('v1')->group(function () {
         $user->assignRole('customer');
         return response()->json([
             'user' => $user,
+            'role' => $user->getRoleNames(),
             'token' => $token,
         ]);
     });
