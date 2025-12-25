@@ -23,6 +23,9 @@ Route::prefix('v1')->group(function () {
         $user->password = Hash::make('password');
         $user->save();
         $token = $user->createToken('api-token')->plainTextToken;
+
+        // asssign role
+        $user->assignRole('customer');
         return response()->json([
             'user' => $user,
             'token' => $token,
