@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ServiceOptionGroup extends Model
 {
@@ -13,7 +14,9 @@ class ServiceOptionGroup extends Model
 
     protected $fillable = [
         'user_id',
-        'title',
+        'client_id',
+        'name',
+        'slug',
         'selection_type',
         'is_required',
         'min_select',
@@ -35,6 +38,18 @@ class ServiceOptionGroup extends Model
     public function options()
     {
         return $this->hasMany(ServiceOption::class)->orderBy('position');
+    }
+
+    public function setSlugAttribute($value)
+    {
+        $originalSlug = Str::slug($value);
+        $slug = $originalSlug;
+        $count = 1;
+        while (self::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+        $this->attributes['slug'] = $slug;
     }
 
     public function services()

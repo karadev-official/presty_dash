@@ -3,7 +3,8 @@
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
 use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
-use App\Http\Controllers\Api\v1\ServiceCategoryController;
+use App\Http\Controllers\Api\v1\Pro\ServiceCategoryController;
+use App\Http\Controllers\Api\v1\Pro\ServiceController;
 use Faker\Factory;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -53,7 +54,15 @@ Route::prefix('v1')->group(function () {
         Route::get('/service-categories', [ServiceCategoryController::class, 'index']);
         Route::get('/service-categories/{category}', [ServiceCategoryController::class, 'show']);
         Route::post('/service-categories', [ServiceCategoryController::class, 'store']);
+        Route::put('/service-categories/{category}', [ServiceCategoryController::class, 'update']);
+        Route::delete('/service-categories/{category}', [ServiceCategoryController::class, 'destroy']);
 
+        // Services routes
+        Route::get('/services', [ServiceController::class, 'index']);
+        Route::get('/services/{service}', [ServiceController::class, 'show']);
+        Route::post('/services', [ServiceController::class, 'store']);
+        Route::put('/services/{service}', [ServiceController::class, 'update']);
+        Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
 
         // CRUD groupes + options
         Route::get('/option-groups', [OptionGroupController::class, 'index']);
