@@ -3,18 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Service extends Model
 {
 
     protected $table = 'services';
     protected $fillable = [
+        'user_id',
+        'service_category_id',
         'name',
         'slug',
-        'service_category_id',
         'description',
-        'duration',
-        'price',
+        'position',
+        'duration', // minutes
+        'price', // centimes
         'is_active',
         'is_online',
     ];
@@ -23,6 +26,18 @@ class Service extends Model
         'is_active' => 'boolean',
         'is_online' => 'boolean',
     ];
+
+    public function setSlugAttribute($value)
+    {
+        $originalSlug = Str::slug($value);
+        $slug = $originalSlug;
+        $count = 1;
+        while (self::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+        $this->attributes['slug'] = $slug;
+    }
 
     public function category()
     {

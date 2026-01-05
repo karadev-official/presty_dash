@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\v1;
+namespace App\Http\Controllers\Api\v1\Pro;
 
 use App\Http\Controllers\Controller;
 use App\Models\ServiceCategory;
@@ -8,15 +8,26 @@ use Illuminate\Http\Request;
 
 class ServiceCategoryController extends Controller
 {
+
+    private function getLastPosition(Request $request)
+    {
+        $lastPosition = ServiceCategory::where("user_id", $request->user()->id)
+            ->max('position');
+        return response()->json(
+            [
+                'last_position' => $lastPosition ?? 0
+            ]
+        );
+    }
+
     public function index(Request $request)
     {
-
-        $categories = ServiceCategory::with('services')->where("user_id", $request->user()->id)->get();
+        $categories = ServiceCategory::with('services')->where("user_id", $request->user()->id)
+            ->orderBy('position')
+            ->get();
         $categories = $categories->map(function ($category) {
             return $this->ServiceCategoryPayload($category);
         });
-
-
         return response()->json(
             [
                 'categories' => $categories
@@ -27,9 +38,7 @@ class ServiceCategoryController extends Controller
     public function show(Request $request, ServiceCategory $category)
     {
         abort_unless($category->user_id === $request->user()->id, 404);
-
         $category->load('services.optionGroups.options');
-
         return response()->json(
             [
                 'category' => $this->ServiceCategoryPayload($category)
@@ -47,6 +56,11 @@ class ServiceCategoryController extends Controller
             'position' => ['sometimes', 'integer', 'min:0'],
             'agenda_color' => ['sometimes', 'string', 'max:7'],
         ]);
+
+        if (!isset($data['position'])) {
+            $data['position'] = ServiceCategory::where("user_id", $request->user()->id)
+                ->max('position') + 1;
+        }
 
         // vérifier unicité du slug par pro
         $exists = ServiceCategory::where('user_id', $request->user()->id)
@@ -67,6 +81,51 @@ class ServiceCategoryController extends Controller
                 'category' => $this->ServiceCategoryPayload($category)
             ],
             201
+        );
+    }
+
+    public function update(Request $request, ServiceCategory $category)
+    {
+        abort_unless($category->user_id === $request->user()->id, 404);
+
+        $data = $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'slug' => ['sometimes', 'string', 'max:255'],
+            'is_active' => ['sometimes', 'boolean'],
+            'is_online' => ['sometimes', 'boolean'],
+            'position' => ['sometimes', 'integer', 'min:0'],
+            'agenda_color' => ['sometimes', 'string', 'max:7'],
+        ]);
+
+        if (isset($data['slug']) && $data['slug'] !== $category->slug) {
+            $exists = ServiceCategory::where('user_id', $request->user()->id)
+                ->where('slug', $data['slug'])
+                ->exists();
+
+            if ($exists) {
+                return response()->json(['message' => 'La catégorie existe déjà.'], 422);
+            }
+        }
+
+        $category->update($data);
+
+        return response()->json(
+            [
+                'category' => $this->ServiceCategoryPayload($category)
+            ]
+        );
+    }
+
+    public function destroy(Request $request, ServiceCategory $category)
+    {
+        abort_unless($category->user_id === $request->user()->id, 404);
+
+        $category->delete();
+
+        return response()->json(
+            [
+                'message' => 'Catégorie supprimée avec succès.'
+            ]
         );
     }
 
