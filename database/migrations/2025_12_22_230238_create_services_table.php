@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug');
             $table->text('description')->nullable();
+
+            $table->unsignedInteger('position')->default(0);
+
             $table->unsignedInteger('duration')->default(0); // minutes
             $table->unsignedInteger('price')->default(0); // centimes
             $table->boolean('is_active')->default(true);
@@ -28,7 +31,7 @@ return new class extends Migration
 
 
 
-            $table->index(['user_id', 'is_active']);
+            $table->index(['user_id', 'is_active', 'is_online', 'position']);
         });
     }
 

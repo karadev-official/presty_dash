@@ -15,10 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('service_id')->constrained('services')->cascadeOnDelete();
             $table->foreignId('service_option_group_id')->constrained('service_option_groups')->cascadeOnDelete();
-
-            // ordre d’affichage du groupe dans la prestation
             $table->unsignedInteger('position')->default(0);
-
             $table->timestamps();
 
             $table->unique(['service_id', 'service_option_group_id'], 'svc_opt_grp_unique');
