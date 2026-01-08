@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
 use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
 use App\Http\Controllers\Api\v1\Pro\ServiceCategoryController;
 use App\Http\Controllers\Api\v1\Pro\ServiceController;
+use App\Http\Controllers\Api\v1\UploadController;
 use Faker\Factory;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -80,5 +81,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/services/{service}/option-groups/attach', [ServiceOptionGroupAttachController::class, 'attach']);
         Route::post('/services/{service}/option-groups/detach', [ServiceOptionGroupAttachController::class, 'detach']);
         Route::post('/services/{service}/option-groups/reorder', [ServiceOptionGroupAttachController::class, 'reorder']);
+
+        // Upload images for options
+        Route::post('/uploads', [UploadController::class, 'store']);
     });
 });

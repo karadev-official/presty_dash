@@ -97,16 +97,6 @@ class ServiceCategoryController extends Controller
             'agenda_color' => ['sometimes', 'string', 'max:7'],
         ]);
 
-        if (isset($data['slug']) && $data['slug'] !== $category->slug) {
-            $exists = ServiceCategory::where('user_id', $request->user()->id)
-                ->where('slug', $data['slug'])
-                ->exists();
-
-            if ($exists) {
-                return response()->json(['message' => 'La catégorie existe déjà.'], 422);
-            }
-        }
-
         $category->update($data);
 
         return response()->json(

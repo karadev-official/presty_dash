@@ -18,10 +18,13 @@ class ServiceOption extends Model
         'price',
         'position',
         'is_active',
+        'is_online',
+        'image_uri',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_online' => 'boolean',
     ];
 
     public function setSlugAttribute($value)

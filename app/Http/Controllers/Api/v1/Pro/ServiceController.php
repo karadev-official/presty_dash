@@ -44,28 +44,93 @@ class ServiceController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255'],
             'service_category_id' => ['required', 'exists:service_categories,id'],
-            'description' => ['sometimes', 'string'],
-            'duration' => ['required', 'integer', 'min:1'],
+            'description' => ['nullable', 'string', 'max:600'],
+            'duration' => ['required', 'integer', 'min:0'],
             'price' => ['required', 'numeric', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'is_online' => ['sometimes', 'boolean'],
+
+            'option_groups' => ['sometimes', 'array'],
+
+            'option_groups.*.id' => ['nullable', 'integer'], // pas de exists ici si tu veux être souple
+            'option_groups.*.client_id' => ['sometimes', 'string', 'max:255'], // interface only (ignored)
+            'option_groups.*.name' => ['required_with:option_groups', 'string', 'max:255'],
+            'option_groups.*.slug' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'option_groups.*.selection_type' => ['required_with:option_groups', Rule::in(['single', 'multiple'])],
+            'option_groups.*.is_required' => ['required_with:option_groups', 'boolean'],
+            'option_groups.*.min_select' => ['sometimes', 'integer', 'min:0'],
+            'option_groups.*.max_select' => ['sometimes', 'nullable', 'integer', 'min:0'],
+            'option_groups.*.position' => ['sometimes', 'integer', 'min:0'],
+
+            'option_groups.*.options' => ['sometimes', 'array'],
+            'option_groups.*.options.*.id' => ['nullable', 'integer'],
+            'option_groups.*.options.*.client_id' => ['sometimes', 'string', 'max:255'], // ignored
+            'option_groups.*.options.*.name' => ['required_with:option_groups.*.options', 'string', 'max:255'],
+            'option_groups.*.options.*.slug' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'option_groups.*.options.*.duration' => ['sometimes', 'integer', 'min:0'],
+            'option_groups.*.options.*.price' => ['required_with:option_groups.*.options', 'integer', 'min:0'], // centimes
+            'option_groups.*.options.*.position' => ['sometimes', 'integer', 'min:0'],
+            'option_groups.*.options.*.photo_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+
         ]);
 
 
-        $service = Service::create([
-            'user_id' => $request->user()->id,
-            ...$data,
-        ]);
+        $service = new Service();
 
-        // groupe de services
-        if (isset($data['option_groups'])) {
-            // foreach ($data['option_groups'] as $index => $groupToCreate) {
+        DB::transaction(function () use (&$service, $request, $data) {
+            $service = Service::create([
+                'user_id' => $request->user()->id,
+                ...collect($data)->except(['option_groups'])->toArray(),
+            ]);
 
-            // }
-        }
+            if (!array_key_exists('option_groups', $data)) {
+                return;
+            }
+
+            $uid = $request->user()->id;
+            $groupsPayload = $data['option_groups'];
+            $sync = [];
+
+            foreach ($groupsPayload as $gi => $g) {
+                // 2) Create group (store = toujours create)
+                $group = ServiceOptionGroup::create([
+                    'user_id'        => $uid,
+                    'client_id'      => $g['client_id'] ?? null,
+                    'name'           => $g['name'],
+                    'slug'           => $g['slug'] ?? $g['name'],
+                    'selection_type' => $g['selection_type'],
+                    'is_required'    => (bool) $g['is_required'],
+                    'min_select'     => $g['min_select'] ?? 0,
+                    'max_select'     => $g['max_select'] ?? null,
+                    'position'       => $g['position'] ?? $gi,
+                    'is_active'      => true,
+                ]);
+
+                // pivot
+                $sync[$group->id] = ['position' => $g['position'] ?? $gi];
+
+                // 3) Options
+                foreach (($g['options'] ?? []) as $oi => $o) {
+                    ServiceOption::create([
+                        'service_option_group_id' => $group->id,
+                        'client_id'               => $o['client_id'] ?? null,
+                        'name'                    => $o['name'],
+                        'slug'                    => $o['slug'] ?? $o['name'],
+                        'duration'                => $o['duration'] ?? 0,
+                        'price'                   => $o['price'],
+                        'position'                => $o['position'] ?? $oi,
+                        'is_active'               => true,
+                        'photo_url' => $o['photo_url'] ?? null,
+                    ]);
+                }
+
+                // 4) Attach groups to service
+                $service->optionGroups()->sync($sync);
+            }
+        });
 
         return response()->json([
-            'service' => $this->servicePayload($service),
+            'service' => $this->servicePayload($service->load('optionGroups.options')),
         ]);
     }
 
@@ -77,129 +142,153 @@ class ServiceController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'string', 'max:255'],
             'service_category_id' => ['sometimes', 'exists:service_categories,id'],
-            'description' => ['sometimes', 'string'],
-            'duration' => ['sometimes', 'integer', 'min:1'],
+            'description' => ['nullable', 'string', 'max:600'],
+            'duration' => ['required', 'integer', 'min:0'],
             'price' => ['sometimes', 'numeric', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'is_online' => ['sometimes', 'boolean'],
+
             'option_groups' => ['sometimes', 'array'],
+
+            'option_groups.*.id' => ['nullable', 'integer'], // pas de exists ici si tu veux être souple
+            'option_groups.*.client_id' => ['sometimes', 'string', 'max:255'], // interface only (ignored)
+            'option_groups.*.name' => ['required_with:option_groups', 'string', 'max:255'],
+            'option_groups.*.slug' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'option_groups.*.selection_type' => ['required_with:option_groups', Rule::in(['single', 'multiple'])],
+            'option_groups.*.is_required' => ['required_with:option_groups', 'boolean'],
+            'option_groups.*.min_select' => ['sometimes', 'integer', 'min:0'],
+            'option_groups.*.max_select' => ['sometimes', 'nullable', 'integer', 'min:0'],
+            'option_groups.*.position' => ['sometimes', 'integer', 'min:0'],
+
+            'option_groups.*.options' => ['sometimes', 'array'],
+            'option_groups.*.options.*.id' => ['nullable', 'integer'],
+            'option_groups.*.options.*.client_id' => ['sometimes', 'string', 'max:255'], // ignored
+            'option_groups.*.options.*.name' => ['required_with:option_groups.*.options', 'string', 'max:255'],
+            'option_groups.*.options.*.slug' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'option_groups.*.options.*.duration' => ['sometimes', 'integer', 'min:0'],
+            'option_groups.*.options.*.price' => ['required_with:option_groups.*.options', 'integer', 'min:0'], // centimes
+            'option_groups.*.options.*.position' => ['sometimes', 'integer', 'min:0'],
+            'option_groups.*.options.*.photo_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
         ]);
 
-        // DB::transaction(function () use ($request, $service, $data) {
+        DB::transaction(function () use ($service, $data, $request) {
 
-        //     // 1) update service fields
-        //     $serviceFields = collect($data)->except('option_groups')->toArray();
-        //     if (!empty($serviceFields)) {
-        //         $service->update($serviceFields);
-        //     }
+            // 1) update service fields
+            $serviceFields = collect($data)->except(['option_groups'])->toArray();
+            if (!empty($serviceFields)) {
+                $service->update($serviceFields);
+            }
 
-        //     // 2) option groups sync (create/update + attach + options sync)
-        //     if (!array_key_exists('option_groups', $data)) {
-        //         return;
-        //     }
+            if (!array_key_exists('option_groups', $data)) {
+                return;
+            }
 
-        //     $incomingGroups = $data['option_groups'] ?? [];
-        //     $userId = $request->user()->id;
+            $uid = $request->user()->id;
+            $groupsPayload = $data['option_groups'] ?? [];
 
-        //     // ids actuellement attachés à ce service
-        //     $currentAttachedIds = $service->optionGroups()->pluck('service_option_groups.id')->all();
+            $sync = [];
 
-        //     $attachMap = [];           // group_id => ['position' => ...]
-        //     $keptGroupIds = [];        // ids qui restent attachés
-        //     $seenOptionIdsByGroup = []; // [groupId => [optionIds...]]
+            foreach ($groupsPayload as $gi => $g) {
 
-        //     foreach ($incomingGroups as $gIndex => $g) {
+                // ✅ GROUP: id != null => update ; id == null => create
+                if (!empty($g['id'])) {
+                    $group = ServiceOptionGroup::where('id', $g['id'])
+                        ->where('user_id', $uid)
+                        ->firstOrFail();
 
-        //         $groupId = is_numeric($g['id'] ?? null) ? (int)$g['id'] : null;
+                    $group->update([
+                        'name'           => $g['name'],
+                        'slug'           => $g['slug'] ?? $g['name'],
+                        'selection_type' => $g['selection_type'],
+                        'is_required'    => (bool) $g['is_required'],
+                        'min_select'     => $g['min_select'] ?? 0,
+                        'max_select'     => $g['max_select'] ?? null,
+                        'position'       => $g['position'] ?? $gi,
+                        'is_active'      => true,
+                    ]);
+                } else {
+                    $group = ServiceOptionGroup::create([
+                        'user_id'        => $uid,
+                        'client_id'      => $g['client_id'],
+                        'name'           => $g['name'],
+                        'slug'           => $g['slug'] ?? $g['name'],
+                        'selection_type' => $g['selection_type'],
+                        'is_required'    => (bool) $g['is_required'],
+                        'min_select'     => $g['min_select'] ?? 0,
+                        'max_select'     => $g['max_select'] ?? null,
+                        'position'       => $g['position'] ?? $gi,
+                        'is_active'      => true,
+                    ]);
+                }
 
-        //         // soit update un groupe existant du user, soit create
-        //         if ($groupId) {
-        //             $group = ServiceOptionGroup::where('id', $groupId)
-        //                 ->where('user_id', $userId)
-        //                 ->firstOrFail();
+                // ✅ pivot
+                $sync[$group->id] = ['position' => $g['position'] ?? $gi];
 
-        //             $group->update([
-        //                 'title' => $g['title'],
-        //                 'selection_type' => $g['selection_type'],
-        //                 'is_required' => (bool)($g['is_required'] ?? false),
-        //                 'min_select' => $g['min_select'] ?? null,
-        //                 'max_select' => $g['max_select'] ?? null,
-        //                 'is_active' => (bool)($g['is_active'] ?? true),
-        //                 'position' => $g['position'] ?? $gIndex,
-        //             ]);
-        //         } else {
-        //             $group = ServiceOptionGroup::create([
-        //                 'user_id' => $userId,
-        //                 'title' => $g['title'],
-        //                 'selection_type' => $g['selection_type'],
-        //                 'is_required' => (bool)($g['is_required'] ?? false),
-        //                 'min_select' => $g['min_select'] ?? null,
-        //                 'max_select' => $g['max_select'] ?? null,
-        //                 'is_active' => (bool)($g['is_active'] ?? true),
-        //                 'position' => $g['position'] ?? $gIndex,
-        //             ]);
-        //         }
+                // ✅ OPTIONS
+                $optionsPayload = $g['options'] ?? [];
+                $keptOptionIds = [];
 
-        //         $keptGroupIds[] = $group->id;
+                foreach ($optionsPayload as $oi => $o) {
 
-        //         // pivot attach + position
-        //         $attachMap[$group->id] = [
-        //             'position' => $g['position'] ?? $gIndex,
-        //         ];
+                    $opt = ServiceOption::updateOrCreate(
+                        [
+                            'id' => $o['id'] ?? null,
+                            'service_option_group_id' => $group->id,
+                            'client_id' => $o['client_id'],
+                        ],
+                        [
+                            'name'     => $o['name'],
+                            'slug'     => $o['slug'] ?? $o['name'],
+                            'duration' => $o['duration'] ?? 0,
+                            'price'    => $o['price'], // centimes
+                            'position' => $o['position'] ?? $oi,
+                            'is_active' => $o['is_active'] ?? true,
+                            'is_online' => $o['is_online'] ?? true,
+                            'photo_url' => $o['photo_url'] ?? null, // si colonne existe
+                        ]
+                    );
 
-        //         // 3) options du groupe (create/update + delete missing)
-        //         $incomingOptions = $g['options'] ?? [];
-        //         $keptOptionIds = [];
+                    // if (!empty($o['id'])) {
+                    //     $opt = ServiceOption::where('id', $o['id'])
+                    //         ->where('service_option_group_id', $group->id)
+                    //         ->firstOrFail();
 
-        //         foreach ($incomingOptions as $oIndex => $o) {
-        //             $optId = is_numeric($o['id'] ?? null) ? (int)$o['id'] : null;
+                    //     $opt->update([
+                    //         'name'     => $o['name'],
+                    //         'slug'     => $o['slug'] ?? $o['name'],
+                    //         'duration' => $o['duration'] ?? 0,
+                    //         'price'    => $o['price'], // centimes
+                    //         'position' => $o['position'] ?? $oi,
+                    //         'is_active' => true,
+                    //         // 'photo_url' => $o['photo_url'] ?? null, // si colonne existe
+                    //     ]);
+                    // } else {
+                    //     $opt = ServiceOption::create([
+                    //         'service_option_group_id' => $group->id,
+                    //         'client_id'               => $o['client_id'],
+                    //         'name'     => $o['name'],
+                    //         'slug'     => $o['slug'] ?? $o['name'],
+                    //         'duration' => $o['duration'] ?? 0,
+                    //         'price'    => $o['price'],
+                    //         'position' => $o['position'] ?? $oi,
+                    //         'is_active' => true,
+                    //         // 'photo_url' => $o['photo_url'] ?? null,
+                    //     ]);
+                    // }
+                    $keptOptionIds[] = $opt->id;
+                }
 
-        //             if ($optId) {
-        //                 $opt = ServiceOption::where('id', $optId)
-        //                     ->where('service_option_group_id', $group->id)
-        //                     ->firstOrFail();
+                // ✅ delete options removed in this group
+                ServiceOption::where('service_option_group_id', $group->id)
+                    ->when(count($keptOptionIds) > 0, fn($q) => $q->whereNotIn('id', $keptOptionIds))
+                    ->when(count($keptOptionIds) === 0, fn($q) => $q) // delete all
+                    ->delete();
+            }
 
-        //                 $opt->update([
-        //                     'label' => $o['label'],
-        //                     'duration_min' => $o['duration_min'] ?? 0,
-        //                     'price' => $o['price'] ?? 0,
-        //                     'position' => $o['position'] ?? $oIndex,
-        //                     'is_active' => (bool)($o['is_active'] ?? true),
-        //                 ]);
-        //             } else {
-        //                 $opt = ServiceOption::create([
-        //                     'service_option_group_id' => $group->id,
-        //                     'label' => $o['label'],
-        //                     'duration_min' => $o['duration_min'] ?? 0,
-        //                     'price' => $o['price'] ?? 0,
-        //                     'position' => $o['position'] ?? $oIndex,
-        //                     'is_active' => (bool)($o['is_active'] ?? true),
-        //                 ]);
-        //             }
+            // ✅ sync groups attached to service (detach missing)
+            $service->optionGroups()->sync($sync);
+        });
 
-        //             $keptOptionIds[] = $opt->id;
-        //         }
-
-        //         // supprimer options absentes du payload (au choix: delete ou is_active=false)
-        //         // version delete :
-        //         ServiceOption::where('service_option_group_id', $group->id)
-        //             ->when(count($keptOptionIds) > 0, fn($q) => $q->whereNotIn('id', $keptOptionIds))
-        //             ->when(count($keptOptionIds) === 0, fn($q) => $q) // delete all if empty list
-        //             ->delete();
-
-        //         $seenOptionIdsByGroup[$group->id] = $keptOptionIds;
-        //     }
-
-        //     // 4) detach les groupes supprimés dans le payload
-        //     $toDetach = array_values(array_diff($currentAttachedIds, $keptGroupIds));
-        //     if (!empty($toDetach)) {
-        //         $service->optionGroups()->detach($toDetach);
-        //     }
-
-        //     // 5) attach/update pivot positions (syncWithoutDetaching + updateExistingPivot)
-        //     // le plus simple: sync() complet du pivot avec positions :
-        //     $service->optionGroups()->sync($attachMap);
-        // });
 
         $service->refresh();
 
@@ -246,6 +335,7 @@ class ServiceController extends Controller
                         return [
                             'id' => $option->id,
                             'client_id' => $option->client_id,
+                            'duration' => $option->duration,
                             'name' => $option->name,
                             'price' => $option->price,
                             'position' => $option->position,

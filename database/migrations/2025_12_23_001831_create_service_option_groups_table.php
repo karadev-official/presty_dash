@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('service_option_groups', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // pro owner
-            $table->string('clientId')->nullable(); // client side identifier
+            $table->string('client_id')->nullable(); // client side identifier
             $table->string('name'); // "Longueur", "Extra" "Couleur de cheveux"
             $table->string('slug')->unique()->nullable(); // "longueur", "extra" "couleur-de-cheveux"
             $table->enum('selection_type', ['single', 'multiple'])->default('single'); // radio/checkbox
@@ -29,7 +29,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->index(['user_id', 'is_active', 'is_online', 'position', 'clientId'], 'usr_act_online_pos_cid_idx');
+            $table->index(['user_id', 'is_active', 'is_online', 'position', 'client_id'], 'usr_act_online_pos_cid_idx');
         });
     }
 
