@@ -51,4 +51,9 @@ class Service extends Model
             ->withTimestamps()
             ->orderBy('service_service_option_group.position');
     }
+
+    public function images()
+    {
+        return $this->belongsToMany(Image::class, 'image_service');
+    }
 }

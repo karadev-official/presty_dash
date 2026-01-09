@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\v1\AuthController;
+use App\Http\Controllers\Api\v1\ImageController;
 use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
 use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
 use App\Http\Controllers\Api\v1\Pro\ServiceCategoryController;
@@ -84,5 +85,13 @@ Route::prefix('v1')->group(function () {
 
         // Upload images for options
         Route::post('/uploads', [UploadController::class, 'store']);
+
+        // Image routes
+        Route::prefix('images')->group(function () {
+            Route::post('/', [ImageController::class, 'store']);
+            Route::post('multiple', [ImageController::class, 'showMultiple']);
+            Route::get('{image}', [ImageController::class, 'show']);
+            Route::delete('{image}', [ImageController::class, 'destroy']);
+        });
     });
 });
