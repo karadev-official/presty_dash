@@ -17,6 +17,11 @@ class Image extends Model
         'mime_type',
     ];
 
+    public function getUrlAttribute()
+    {
+        return env('FTP_BASE_URL') . '/' . $this->path;
+    }
+
     public function services()
     {
         return $this->belongsToMany(Service::class, 'image_service');

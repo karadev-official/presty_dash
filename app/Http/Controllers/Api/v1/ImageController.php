@@ -14,7 +14,7 @@ class ImageController extends Controller
     {
         // Logic to store image
         $request->validate([
-            'file' => ['required', 'file', 'image', 'max:4096'], // 4MB
+            'file' => ['required', 'file', 'mimes:jpeg,png,jpg,webp,gif,heic,svg', 'max:4096'], // 4MB
             'service_id' => ['nullable', 'exists:services,id'], // Service IDs to associate with
         ]);
 
@@ -46,6 +46,66 @@ class ImageController extends Controller
 
     public function show(Image $image)
     {
+        return response()->json([
+            'image' => $this->imagePayload($image),
+        ]);
+    }
+
+    public function findImageByUrl(Request $request)
+    {
+        $request->validate([
+            'url' => ['required', 'string', 'max:2048'],
+        ]);
+
+        $baseUrl = env('FTP_BASE_URL') . '/';
+        $path = $request->input('url');
+        if (str_starts_with($path, $baseUrl)) {
+            $path = substr($path, strlen($baseUrl));
+        }
+
+        $image = Image::where('path', $path)->first();
+        if (!$image) {
+            return response()->json(['image' => null,]);
+        }
+
+        return response()->json([
+            'image' => $this->imagePayload($image),
+        ]);
+    }
+
+    public function firstOrCreate(Request $request)
+    {
+        $request->validate([
+            'path' => ['required', 'string', 'max:2048'],
+            'name' => ['required', 'string', 'max:255'],
+            'mime_type' => ['required', 'string', 'max:100'],
+            'file' => ['required', 'file', 'image', 'max:4096'], // 4MB
+            'service_id' => ['nullable', 'exists:services,id'], // Service IDs to associate with
+        ]);
+
+        // retirer l'url de base si présent
+        $baseUrl = env('FTP_BASE_URL') . '/';
+        if (str_starts_with($request->input('path'), $baseUrl)) {
+            $request->merge([
+                'path' => substr($request->input('path'), strlen($baseUrl)),
+            ]);
+        }
+        $image = Image::where('path', $request->input('path'))->first();
+        if (!$image) {
+            // Stockage de l'image
+            $file = $request->file('file');
+            $path = $file->store('images', ['disk' => 'ftp']);
+            $image = Image::create([
+                'path' => $path,
+                'name' => $request->input('name'),
+                'mime_type' => $request->input('mime_type'),
+                'user_id' => $request->user()->id,
+            ]);
+            if ($request->has('service_id')) {
+                $image->services()->attach($request->input('service_id'));
+            }
+        }
+
         return response()->json([
             'image' => $this->imagePayload($image),
         ]);
@@ -84,7 +144,7 @@ class ImageController extends Controller
             'id' => $image->id,
             'name' => $image->name,
             'mime_type' => $image->mime_type,
-            'url' => env('FTP_BASE_URL') . '/' . $image->path,
+            'url' => $image->url,
             'created_at' => $image->created_at,
             'updated_at' => $image->updated_at,
             'services' => $image->services->map(function ($service) {

@@ -90,6 +90,8 @@ Route::prefix('v1')->group(function () {
         Route::prefix('images')->group(function () {
             Route::post('/', [ImageController::class, 'store']);
             Route::post('multiple', [ImageController::class, 'showMultiple']);
+            Route::post('first-or-create', [ImageController::class, 'firstOrCreate']);
+            Route::post('find-by-url', [ImageController::class, 'findImageByUrl']);
             Route::get('{image}', [ImageController::class, 'show']);
             Route::delete('{image}', [ImageController::class, 'destroy']);
         });

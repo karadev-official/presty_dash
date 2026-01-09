@@ -49,7 +49,7 @@ class ServiceController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'is_online' => ['sometimes', 'boolean'],
-
+            'image_ids' => ['nullable', 'array'],
             'option_groups' => ['sometimes', 'array'],
 
             'option_groups.*.id' => ['nullable', 'integer'], // pas de exists ici si tu veux être souple
@@ -123,9 +123,11 @@ class ServiceController extends Controller
                         'photo_url' => $o['photo_url'] ?? null,
                     ]);
                 }
-
-                // 4) Attach groups to service
-                $service->optionGroups()->sync($sync);
+            }
+            // 4) Attach groups to service
+            $service->optionGroups()->sync($sync);
+            if (array_key_exists('image_ids', $data)) {
+                $service->images()->sync($data['image_ids']);
             }
         });
 
@@ -147,7 +149,7 @@ class ServiceController extends Controller
             'price' => ['sometimes', 'numeric', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'is_online' => ['sometimes', 'boolean'],
-
+            'image_ids' => ['nullable', 'array'],
             'option_groups' => ['sometimes', 'array'],
 
             'option_groups.*.id' => ['nullable', 'integer'], // pas de exists ici si tu veux être souple
@@ -185,7 +187,6 @@ class ServiceController extends Controller
 
             $uid = $request->user()->id;
             $groupsPayload = $data['option_groups'] ?? [];
-
             $sync = [];
 
             foreach ($groupsPayload as $gi => $g) {
@@ -287,6 +288,10 @@ class ServiceController extends Controller
 
             // ✅ sync groups attached to service (detach missing)
             $service->optionGroups()->sync($sync);
+            // Sync images if provided
+            if (array_key_exists('image_ids', $data)) {
+                $service->images()->sync($data['image_ids']);
+            }
         });
 
 
@@ -343,6 +348,12 @@ class ServiceController extends Controller
                     }),
                 ];
             }),
+            'images' => $service->images->map(function ($image) {
+                return [
+                    'id' => $image->id,
+                    'url' => $image->url,
+                ];
+            })
         ];
     }
 }
