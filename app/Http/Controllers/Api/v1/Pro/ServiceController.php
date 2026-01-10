@@ -8,6 +8,7 @@ use App\Models\ServiceOption;
 use App\Models\ServiceOptionGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class ServiceController extends Controller
@@ -70,8 +71,7 @@ class ServiceController extends Controller
             'option_groups.*.options.*.duration' => ['sometimes', 'integer', 'min:0'],
             'option_groups.*.options.*.price' => ['required_with:option_groups.*.options', 'integer', 'min:0'], // centimes
             'option_groups.*.options.*.position' => ['sometimes', 'integer', 'min:0'],
-            'option_groups.*.options.*.photo_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
-
+            'option_groups.*.options.*.image_id' => ['sometimes', 'nullable', 'integer', 'exists:images,id'],
         ]);
 
 
@@ -119,8 +119,9 @@ class ServiceController extends Controller
                         'duration'                => $o['duration'] ?? 0,
                         'price'                   => $o['price'],
                         'position'                => $o['position'] ?? $oi,
-                        'is_active'               => true,
-                        'photo_url' => $o['photo_url'] ?? null,
+                        'is_active'               => $o['is_active'] ?? true,
+                        'is_online'               => $o['is_online'] ?? true,
+                        'image_id' => $o['image_id'] ?? null,
                     ]);
                 }
             }
@@ -140,6 +141,7 @@ class ServiceController extends Controller
     {
         abort_unless($service->user_id === $request->user()->id, 404);
 
+        Log::info($request->input("option_groups"));
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'string', 'max:255'],
@@ -170,7 +172,7 @@ class ServiceController extends Controller
             'option_groups.*.options.*.duration' => ['sometimes', 'integer', 'min:0'],
             'option_groups.*.options.*.price' => ['required_with:option_groups.*.options', 'integer', 'min:0'], // centimes
             'option_groups.*.options.*.position' => ['sometimes', 'integer', 'min:0'],
-            'option_groups.*.options.*.photo_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'option_groups.*.options.*.image_id' => ['sometimes', 'nullable', 'integer', 'exists:images,id'],
         ]);
 
         DB::transaction(function () use ($service, $data, $request) {
@@ -205,7 +207,8 @@ class ServiceController extends Controller
                         'min_select'     => $g['min_select'] ?? 0,
                         'max_select'     => $g['max_select'] ?? null,
                         'position'       => $g['position'] ?? $gi,
-                        'is_active'      => true,
+                        'is_active' => $o['is_active'] ?? true,
+                        'is_online' => $o['is_online'] ?? true,
                     ]);
                 } else {
                     $group = ServiceOptionGroup::create([
@@ -218,7 +221,8 @@ class ServiceController extends Controller
                         'min_select'     => $g['min_select'] ?? 0,
                         'max_select'     => $g['max_select'] ?? null,
                         'position'       => $g['position'] ?? $gi,
-                        'is_active'      => true,
+                        'is_active' => $o['is_active'] ?? true,
+                        'is_online' => $o['is_online'] ?? true,
                     ]);
                 }
 
@@ -245,37 +249,9 @@ class ServiceController extends Controller
                             'position' => $o['position'] ?? $oi,
                             'is_active' => $o['is_active'] ?? true,
                             'is_online' => $o['is_online'] ?? true,
-                            'photo_url' => $o['photo_url'] ?? null, // si colonne existe
+                            'image_id' => $o['image_id'] ?? null,
                         ]
                     );
-
-                    // if (!empty($o['id'])) {
-                    //     $opt = ServiceOption::where('id', $o['id'])
-                    //         ->where('service_option_group_id', $group->id)
-                    //         ->firstOrFail();
-
-                    //     $opt->update([
-                    //         'name'     => $o['name'],
-                    //         'slug'     => $o['slug'] ?? $o['name'],
-                    //         'duration' => $o['duration'] ?? 0,
-                    //         'price'    => $o['price'], // centimes
-                    //         'position' => $o['position'] ?? $oi,
-                    //         'is_active' => true,
-                    //         // 'photo_url' => $o['photo_url'] ?? null, // si colonne existe
-                    //     ]);
-                    // } else {
-                    //     $opt = ServiceOption::create([
-                    //         'service_option_group_id' => $group->id,
-                    //         'client_id'               => $o['client_id'],
-                    //         'name'     => $o['name'],
-                    //         'slug'     => $o['slug'] ?? $o['name'],
-                    //         'duration' => $o['duration'] ?? 0,
-                    //         'price'    => $o['price'],
-                    //         'position' => $o['position'] ?? $oi,
-                    //         'is_active' => true,
-                    //         // 'photo_url' => $o['photo_url'] ?? null,
-                    //     ]);
-                    // }
                     $keptOptionIds[] = $opt->id;
                 }
 
@@ -344,6 +320,10 @@ class ServiceController extends Controller
                             'name' => $option->name,
                             'price' => $option->price,
                             'position' => $option->position,
+                            'is_active' => $option->is_active,
+                            'is_online' => $option->is_online,
+                            'image_id' => $option->image->id ?? null,
+                            'image_url' => $option->image->url ?? null,
                         ];
                     }),
                 ];

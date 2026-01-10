@@ -19,7 +19,7 @@ class ServiceOption extends Model
         'position',
         'is_active',
         'is_online',
-        'image_uri',
+        'image_id',
     ];
 
     protected $casts = [
@@ -42,5 +42,10 @@ class ServiceOption extends Model
     public function group()
     {
         return $this->belongsTo(ServiceOptionGroup::class, 'service_option_group_id');
+    }
+
+    public function image()
+    {
+        return $this->belongsTo(Image::class, 'image_id');
     }
 }
