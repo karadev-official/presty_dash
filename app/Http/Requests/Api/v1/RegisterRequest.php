@@ -25,8 +25,11 @@ class RegisterRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'register_role' => 'nullable|in:customer,pro',
             'device_name' => 'required|string',
+            'register_role' => 'nullable|in:customer,pro',
+
+            // specialty obligatoire pour pro
+            'specialty' => ['required_if:register_role,pro', 'nullable', 'string', 'max:255'],
         ];
     }
 
@@ -41,6 +44,8 @@ class RegisterRequest extends FormRequest
             'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
             'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
             'device_name.required' => 'Le nom de l\'appareil est requis.',
+
+            'specialty.required_if' => 'La spécialité est requise pour les professionnels.',
         ];
     }
 }

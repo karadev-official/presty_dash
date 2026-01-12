@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -23,6 +25,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'specialty',
         'email',
         'password',
     ];
@@ -62,5 +65,15 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    public function resources(): HasMany
+    {
+        return $this->hasMany(Resource::class, 'pro_user_id');
+    }
+
+    public function defaultResource(): HasOne
+    {
+        return $this->hasOne(Resource::class, 'pro_user_id')->where('is_default', true);
     }
 }

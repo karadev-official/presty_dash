@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\LoginRequest;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Api\v1\RegisterRequest;
+use App\Models\Resource;
 
 class AuthController extends Controller
 {
@@ -15,24 +16,36 @@ class AuthController extends Controller
     {
         $request->validated();
 
-        $credentials = $request->only('email', 'name', 'register_role', 'password', 'device_name');
+        $data = $request->validated();
         $user = User::create([
-            'name' => $credentials['name'],
-            'email' => $credentials['email'],
-            'password' => Hash::make($credentials['password']),
+            'name' => $data['name'],
+            'specialty' => $data['register_role'] === 'pro' ? ($data['specialty'] ?? null) : null,
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
         ]);
 
         $authorizeRole = ['customer', 'pro'];
 
-        if (isset($credentials['register_role']) && in_array($credentials['register_role'], $authorizeRole)) {
-            $user->assignRole($credentials['register_role']);
-        } else {
+        if (!in_array($data['register_role'], $authorizeRole)) {
             return response()->json([
                 'message' => 'Une erreur est survenue, veuillez nous contacter si le problème persiste.'
             ], 403);
         }
 
-        $token = $user->createToken($credentials['device_name'])->plainTextToken;
+        $user->assignRole($data['register_role']);
+
+        // ✅ Si c’est un pro : créer la ressource self tout de suite
+        if ($data['register_role'] === 'pro' && !$user->defaultResource()->exists()) {
+            $user->resources()->create([
+                'name' => $user->name ?? 'Moi',
+                'specialty' => $user->specialty,   // ✅ reprend la specialty du pro
+                'type' => Resource::TYPE_SELF,
+                'is_default' => true,
+                'is_active' => true,
+            ]);
+        }
+
+        $token = $user->createToken($data['device_name'])->plainTextToken;
         return response()->json([
             'user' => $this->userPayload($user),
             'token' => $token,
@@ -68,6 +81,20 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
+        $user = $request->user();
+        if ($user->hasRole('pro')) {
+            $self = $user->defaultResource()->first();
+
+            if (!$self) {
+                $user->resources()->create([
+                    'name' => $user->name ?? 'Moi',
+                    'specialty' => $user->specialty,
+                    'type' => Resource::TYPE_SELF,
+                    'is_default' => true,
+                    'is_active' => true,
+                ]);
+            }
+        }
         return response()->json($this->userPayload($request->user()));
     }
 
@@ -85,6 +112,7 @@ class AuthController extends Controller
         return [
             'id' => $user->id,
             'name' => $user->name,
+            'specialty' => $user->specialty,
             'email' => $user->email,
             'role' => $user->roles->first()?->name ?? null,
             'created_at' => $user->created_at?->toISOString(),

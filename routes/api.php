@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\ImageController;
 use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
+use App\Http\Controllers\Api\v1\Pro\ResourceController;
 use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
 use App\Http\Controllers\Api\v1\Pro\ServiceCategoryController;
 use App\Http\Controllers\Api\v1\Pro\ServiceController;
@@ -94,6 +95,15 @@ Route::prefix('v1')->group(function () {
             Route::post('find-by-url', [ImageController::class, 'findImageByUrl']);
             Route::get('{image}', [ImageController::class, 'show']);
             Route::delete('{image}', [ImageController::class, 'destroy']);
+        });
+
+        Route::prefix('me/resources')->group(function () {
+            Route::get('/types', [ResourceController::class, 'resourceTypes']);
+            Route::get('/', [ResourceController::class, 'index']);
+            Route::post('/', [ResourceController::class, 'store']);
+            Route::get('/{resource}', [ResourceController::class, 'show']);
+            Route::put('/{resource}', [ResourceController::class, 'update']);
+            Route::delete('/{resource}', [ResourceController::class, 'destroy']);
         });
     });
 });
