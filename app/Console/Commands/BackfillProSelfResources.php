@@ -128,6 +128,11 @@ class BackfillProSelfResources extends Command
                         $stats['renamed_self']++;
                     }
 
+                    // si specialty vide, on le remplit
+                    if (!$canonical->specialty && $pro->specialty) {
+                        $canonicalUpdates['specialty'] = $pro->specialty;
+                    }
+
                     if (!empty($canonicalUpdates)) {
                         $didSomething = true;
                         if (!$dryRun) {

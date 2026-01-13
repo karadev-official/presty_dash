@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1\Pro;
 
 use App\Http\Controllers\Controller;
+use App\Models\Image;
 use App\Models\Resource;
 use Illuminate\Http\Request;
 
@@ -29,7 +30,9 @@ class ResourceController extends Controller
             ->get();
 
         return response()->json([
-            'resources' => $resources,
+            'resources' => $resources->map(function (Resource $resource) {
+                return $this->resourcePayload($resource);
+            }),
         ]);
     }
 
@@ -40,7 +43,7 @@ class ResourceController extends Controller
         abort_unless($resource->pro_user_id === $user->id, 404);
 
         return response()->json([
-            'resource' => $resource,
+            'resource' => $this->resourcePayload($resource),
         ]);
     }
 
@@ -66,7 +69,7 @@ class ResourceController extends Controller
 
         return response()->json([
             'message' => 'Ressource créée avec succès.',
-            'resource' => $resource,
+            'resource' => $this->resourcePayload($resource),
         ], 201);
     }
 
@@ -97,7 +100,39 @@ class ResourceController extends Controller
 
         return response()->json([
             'message' => 'Ressource mise à jour avec succès.',
-            'resource' => $resource,
+            'resource' => $this->resourcePayload($resource),
+        ]);
+    }
+
+    public function updateImage(Request $request, Resource $resource)
+    {
+        $request->validate([
+            'image_id' => ['nullable', 'exists:images,id'],
+        ]);
+
+        $user = $request->user();
+
+        // ✅ sécurité: la ressource doit appartenir à ce pro
+        abort_unless($resource->pro_user_id === $user->id, 403);
+
+        if ($request->image_id === null) {
+            $resource->update(['resource_image_id' => null]);
+            return response()->json([
+                'resource' => $this->resourcePayload($resource->fresh('resourceImage')),
+            ]);
+        }
+
+        // ✅ sécurité: l'image doit appartenir au pro
+        $image = Image::where('id', $request->image_id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        $resource->update([
+            'resource_image_id' => $image->id,
+        ]);
+
+        return response()->json([
+            'resource' => $this->resourcePayload($resource->fresh('resourceImage')),
         ]);
     }
 
@@ -116,5 +151,19 @@ class ResourceController extends Controller
         return response()->json([
             'message' => 'Ressource supprimée avec succès.',
         ]);
+    }
+
+    public function resourcePayload(Resource $resource)
+    {
+        return [
+            'id' => $resource->id,
+            'name' => $resource->name,
+            'specialty' => $resource->specialty,
+            'type' => $resource->type,
+            'is_default' => $resource->is_default,
+            'is_active' => $resource->is_active,
+            'resource_image_id' => $resource->resource_image_id,
+            'resource_image_url' => $resource->resource_image_url,
+        ];
     }
 }

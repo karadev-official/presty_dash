@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -26,8 +27,13 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'specialty',
+        'avatar_image_id',
         'email',
         'password',
+    ];
+
+    protected $appends = [
+        'avatar_url', // ✅ pratique pour le front
     ];
 
     /**
@@ -75,5 +81,15 @@ class User extends Authenticatable
     public function defaultResource(): HasOne
     {
         return $this->hasOne(Resource::class, 'pro_user_id')->where('is_default', true);
+    }
+
+    public function avatarImage(): BelongsTo
+    {
+        return $this->belongsTo(Image::class, 'avatar_image_id');
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatarImage?->url;
     }
 }

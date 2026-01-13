@@ -99,16 +99,20 @@ Route::prefix('v1')->group(function () {
         });
         Route::prefix('profile')->group(function () {
             Route::put('/', [ProfileController::class, 'update']);
+            Route::put('/avatar', [ProfileController::class, 'updateAvatar']);
         });
 
 
-        Route::prefix('me/resources')->group(function () {
+        Route::prefix('resources')->group(function () {
             Route::get('/types', [ResourceController::class, 'resourceTypes']);
             Route::get('/', [ResourceController::class, 'index']);
             Route::post('/', [ResourceController::class, 'store']);
             Route::get('/{resource}', [ResourceController::class, 'show']);
             Route::put('/{resource}', [ResourceController::class, 'update']);
             Route::delete('/{resource}', [ResourceController::class, 'destroy']);
+
+            // Update resource image
+            Route::put('/{resource}/image', [ResourceController::class, 'updateImage']);
         });
     });
 });

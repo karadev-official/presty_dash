@@ -113,6 +113,7 @@ class AuthController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'specialty' => $user->specialty,
+            'avatar_url' => $user->avatar_url,
             'email' => $user->email,
             'role' => $user->roles->first()?->name ?? null,
             'created_at' => $user->created_at?->toISOString(),

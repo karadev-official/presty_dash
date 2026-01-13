@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('type');
             $table->boolean('is_default')->default(false);
             $table->boolean('is_active')->default(true);
+            $table->foreignId('resource_image_id')->nullable()->constrained('images')->nullOnDelete();
             $table->foreignId('linked_user_id')->nullable()->constrained('users')->nullOnDelete();
 
             $table->timestamps();
