@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\ImageController;
 use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
+use App\Http\Controllers\Api\v1\Pro\ProfileController;
 use App\Http\Controllers\Api\v1\Pro\ResourceController;
 use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
 use App\Http\Controllers\Api\v1\Pro\ServiceCategoryController;
@@ -96,6 +97,10 @@ Route::prefix('v1')->group(function () {
             Route::get('{image}', [ImageController::class, 'show']);
             Route::delete('{image}', [ImageController::class, 'destroy']);
         });
+        Route::prefix('profile')->group(function () {
+            Route::put('/', [ProfileController::class, 'update']);
+        });
+
 
         Route::prefix('me/resources')->group(function () {
             Route::get('/types', [ResourceController::class, 'resourceTypes']);
