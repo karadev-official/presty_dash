@@ -9,9 +9,62 @@ use App\Http\Requests\Api\v1\LoginRequest;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Api\v1\RegisterRequest;
 use App\Models\Resource;
+use OpenApi\Attributes as OA;
 
+#[OA\Info(
+    version: '1.0.0',
+    title: 'Presty Dash API',
+    description: 'API documentation',
+    contact: new OA\Contact(
+        name: 'Support Presty',
+        email: 'support@presty.app'
+    )
+)]
+#[OA\Server(
+    url: "http://localhost:8000",
+    description: "Local Development Server"
+)]
+#[OA\Server(
+    url: "https://docs.presty.app",
+    description: "Production Server"
+)]
 class AuthController extends Controller
 {
+
+    #[OA\Post(
+        path: '/api/v1/auth/register',
+        summary: 'User registration',
+        tags: ['Authentication'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['name', 'email', 'password', 'register_role', 'device_name'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', example: 'John Doe'),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'user@example.com'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'yourpassword'),
+                    new OA\Property(property: 'register_role', type: 'string', example: 'customer'),
+                    new OA\Property(property: 'device_name', type: 'string', example: 'My iPhone'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful registration',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'user', type: 'object'),
+                        new OA\Property(property: 'token', type: 'string'),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Forbidden - wrong register role'
+            ),
+        ]
+    )]
     public function register(RegisterRequest $request)
     {
         $request->validated();
@@ -52,6 +105,43 @@ class AuthController extends Controller
         ]);
     }
 
+    #[OA\Post(
+        path: '/api/v1/auth/login',
+        summary: 'User login',
+        tags: ['Authentication'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'password', 'device_name'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'user@example.com'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'yourpassword'),
+                    new OA\Property(property: 'login_role', type: 'string', example: 'customer'),
+                    new OA\Property(property: 'device_name', type: 'string', example: 'My iPhone'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful login',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'user', type: 'object'),
+                        new OA\Property(property: 'token', type: 'string'),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Invalid credentials'
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Forbidden - wrong login role'
+            ),
+        ]
+    )]
     public function login(LoginRequest $request)
     {
         $request->validated();
@@ -79,6 +169,29 @@ class AuthController extends Controller
         ]);
     }
 
+    #[OA\Get(
+        path: '/api/v1/auth/me',
+        summary: 'Get authenticated user info',
+        tags: ['Authentication'],
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful retrieval of user info',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'name', type: 'string', example: 'John Doe'),
+                        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'john.doe@example.com'),
+                        new OA\Property(property: 'role', type: 'string', example: 'customer'),
+                        new OA\Property(property: 'created_at', type: 'string', format: 'date-time', example: '2024-01-01T12:00:00Z'),
+                        new OA\Property(property: 'specialty', type: 'string', example: 'Coiffure'),
+                        new OA\Property(property: 'avatar_url', type: 'string', format: 'uri', example: 'https://example.com/avatars/johndoe.jpg'),
+                    ]
+                )
+            ),
+        ]
+    )]
     public function me(Request $request)
     {
         $user = $request->user();
@@ -98,6 +211,22 @@ class AuthController extends Controller
         return response()->json($this->userPayload($request->user()));
     }
 
+    #[OA\Post(
+        path: '/api/v1/auth/logout',
+        summary: 'User logout',
+        tags: ['Authentication'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful logout',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'ok', type: 'boolean', example: true),
+                    ]
+                )
+            ),
+        ]
+    )]
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

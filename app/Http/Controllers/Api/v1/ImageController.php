@@ -7,9 +7,60 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use OpenApi\Attributes as OA;
 
 class ImageController extends Controller
 {
+
+    #[OA\Post(
+        path: "/api/v1/images",
+        summary: "Upload an image",
+        tags: ["Images"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "file",
+                            type: "string",
+                            format: "binary",
+                            description: "The image file to upload"
+                        ),
+                        new OA\Property(
+                            property: "service_id",
+                            type: "integer",
+                            description: "Optional service ID to associate the image with"
+                        ),
+                    ],
+                    required: ["file"]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Image uploaded successfully",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string"),
+                        new OA\Property(property: "image", type: "object"),
+                        new OA\Property(property: "url", type: "string"),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Bad Request"
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthorized"
+            ),
+        ]
+    )]
     public function store(Request $request)
     {
         // Logic to store image
