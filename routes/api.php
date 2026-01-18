@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\ImageController;
+use App\Http\Controllers\Api\v1\Pro\AvailabilityController;
 use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
 use App\Http\Controllers\Api\v1\Pro\ProfileController;
 use App\Http\Controllers\Api\v1\Pro\ResourceController;
@@ -113,6 +114,11 @@ Route::prefix('v1')->group(function () {
 
             // Update resource image
             Route::put('/{resource}/image', [ResourceController::class, 'updateImage']);
+        });
+
+        Route::prefix('pro/availability')->group(function () {
+            Route::get('/', [AvailabilityController::class, 'show']);
+            Route::put('/', [AvailabilityController::class, 'update']);
         });
     });
 });

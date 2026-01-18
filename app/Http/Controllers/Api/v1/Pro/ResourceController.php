@@ -7,6 +7,8 @@ use App\Models\Image;
 use App\Models\Resource;
 use Illuminate\Http\Request;
 
+use OpenApi\Attributes as OA;
+
 class ResourceController extends Controller
 {
 
@@ -104,6 +106,75 @@ class ResourceController extends Controller
         ]);
     }
 
+    #[OA\Put(
+        path: "/api/v1/resources/{resource}/image",
+        summary: "Met à jour l'image associée à une ressource",
+        tags: ["Pro - Ressources"],
+        parameters: [
+            new OA\Parameter(
+                name: "resource",
+                in: "path",
+                description: "ID de la ressource",
+                required: true,
+                schema: new OA\Schema(type: "integer")
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: [
+                "application/json" => new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "image_id",
+                                type: "integer",
+                                description: "ID de l'image à associer à la ressource. Mettre à null pour dissocier l'image."
+                            ),
+                        ]
+                    )
+                )
+            ]
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Image de la ressource mise à jour avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "resource",
+                                type: "object",
+                                description: "La ressource mise à jour",
+                                properties: [
+                                    new OA\Property(property: "id", type: "integer"),
+                                    new OA\Property(property: "name", type: "string"),
+                                    new OA\Property(property: "specialty", type: "string"),
+                                    new OA\Property(property: "type", type: "string"),
+                                    new OA\Property(property: "is_default", type: "boolean"),
+                                    new OA\Property(property: "is_active", type: "boolean"),
+                                    new OA\Property(property: "resource_image_id", type: "integer"),
+                                    new OA\Property(property: "resource_image_url", type: "string"),
+                                ]
+                            ),
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Forbidden - L'utilisateur n'a pas les droits nécessaires"
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Not Found - La ressource ou l'image n'existe pas"
+            ),
+        ]
+    )]
     public function updateImage(Request $request, Resource $resource)
     {
         $request->validate([
