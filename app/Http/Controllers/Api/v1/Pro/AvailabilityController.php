@@ -153,24 +153,30 @@ class AvailabilityController extends Controller
                 );
 
                 // ranges override: replace all
-                AvailabilityOverrideRange::where('override_id', $override->id)->delete();
-                foreach (($ov['ranges'] ?? []) as $r) {
-                    AvailabilityOverrideRange::create([
-                        'override_id' => $override->id,
-                        'start_time' => $r['start'],
-                        'end_time' => $r['end'],
-                    ]);
+                if (array_key_exists('ranges', $ov)) {
+                    AvailabilityOverrideRange::where('override_id', $override->id)->delete();
+
+                    foreach (($ov['ranges'] ?? []) as $r) {
+                        AvailabilityOverrideRange::create([
+                            'override_id' => $override->id,
+                            'start_time' => $r['start'],
+                            'end_time' => $r['end'],
+                        ]);
+                    }
                 }
 
                 // blocked slots for date: replace all
-                AvailabilityDateBlockedSlot::where('override_id', $override->id)->delete();
-                foreach (($blockedByDate[$date] ?? []) as $slotId) {
-                    [$start, $end] = explode('-', $slotId);
-                    AvailabilityDateBlockedSlot::create([
-                        'override_id' => $override->id,
-                        'start_time' => $start,
-                        'end_time' => $end,
-                    ]);
+                if (array_key_exists($date, $blockedByDate)) {
+                    AvailabilityDateBlockedSlot::where('override_id', $override->id)->delete();
+
+                    foreach (($blockedByDate[$date] ?? []) as $slotId) {
+                        [$start, $end] = explode('-', $slotId);
+                        AvailabilityDateBlockedSlot::create([
+                            'override_id' => $override->id,
+                            'start_time' => $start,
+                            'end_time' => $end,
+                        ]);
+                    }
                 }
             }
         });
