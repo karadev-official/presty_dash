@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\ImageController;
 use App\Http\Controllers\Api\v1\Pro\AvailabilityController;
 use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
+use App\Http\Controllers\Api\v1\Pro\ProductCategoryController;
+use App\Http\Controllers\Api\v1\Pro\ProductController;
 use App\Http\Controllers\Api\v1\Pro\ProfileController;
 use App\Http\Controllers\Api\v1\Pro\ResourceController;
 use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
@@ -55,36 +57,62 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
 
-        // CategoriesService routes
-        Route::get('/service-categories', [ServiceCategoryController::class, 'index']);
-        Route::get('/service-categories/{category}', [ServiceCategoryController::class, 'show']);
-        Route::post('/service-categories', [ServiceCategoryController::class, 'store']);
-        Route::put('/service-categories/{category}', [ServiceCategoryController::class, 'update']);
-        Route::delete('/service-categories/{category}', [ServiceCategoryController::class, 'destroy']);
+        //Services
+        Route::prefix("service-categories")->group(function () {
+            Route::get('/', [ServiceCategoryController::class, 'index']);
+            Route::get('/{category}', [ServiceCategoryController::class, 'show']);
+            Route::post('/', [ServiceCategoryController::class, 'store']);
+            Route::put('/{category}', [ServiceCategoryController::class, 'update']);
+            Route::delete('/{category}', [ServiceCategoryController::class, 'destroy']);
+        });
+        Route::prefix("services")->group(function () {
+            Route::get('/', [ServiceController::class, 'index']);
+            Route::get('/{service}', [ServiceController::class, 'show']);
+            Route::post('/', [ServiceController::class, 'store']);
+            Route::put('/{service}', [ServiceController::class, 'update']);
+            Route::delete('/{service}', [ServiceController::class, 'destroy']);
 
-        // Services routes
-        Route::get('/services', [ServiceController::class, 'index']);
-        Route::get('/services/{service}', [ServiceController::class, 'show']);
-        Route::post('/services', [ServiceController::class, 'store']);
-        Route::put('/services/{service}', [ServiceController::class, 'update']);
-        Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
+            // Attacher/détacher des groupes à une prestation
+            Route::get('/{service}/option-groups', [ServiceOptionGroupAttachController::class, 'index']);
+            Route::post('/{service}/option-groups/attach', [ServiceOptionGroupAttachController::class, 'attach']);
+            Route::post('/{service}/option-groups/detach', [ServiceOptionGroupAttachController::class, 'detach']);
+            Route::post('/{service}/option-groups/reorder', [ServiceOptionGroupAttachController::class, 'reorder']);
+        });
+
+        //Products
+        Route::prefix("product-categories")->group(function () {
+            Route::get('/', [ProductCategoryController::class, 'index']);
+            Route::get('/{category}', [ProductCategoryController::class, 'show']);
+            Route::post('/', [ProductCategoryController::class, 'store']);
+            Route::put('/{category}', [ProductCategoryController::class, 'update']);
+            Route::delete('/{category}', [ProductCategoryController::class, 'destroy']);
+        });
+
+        Route::prefix("products")->group(function () {
+            Route::post('/', [ProductController::class, 'store']);
+            Route::get('/', [ProductController::class, 'index']);
+            Route::get('/{product}', [ProductController::class, 'show']);
+            Route::put('/{product}', [ProductController::class, 'update']);
+            Route::delete('/{product}', [ProductController::class, 'destroy']);
+        });
+
+
+
+
 
         // CRUD groupes + options
-        Route::get('/option-groups', [OptionGroupController::class, 'index']);
-        Route::post('/option-groups', [OptionGroupController::class, 'store']);
-        Route::get('/option-groups/{group}', [OptionGroupController::class, 'show']);
-        Route::put('/option-groups/{group}', [OptionGroupController::class, 'update']);
-        Route::delete('/option-groups/{group}', [OptionGroupController::class, 'destroy']);
+        Route::prefix("option-groups")->group(function () {
+            Route::get('/', [OptionGroupController::class, 'index']);
+            Route::post('/', [OptionGroupController::class, 'store']);
+            Route::get('/{group}', [OptionGroupController::class, 'show']);
+            Route::put('/{group}', [OptionGroupController::class, 'update']);
+            Route::delete('/{group}', [OptionGroupController::class, 'destroy']);
 
-        Route::post('/option-groups/{group}/options', [OptionGroupController::class, 'storeOption']);
-        Route::put('/option-groups/{group}/options/{option}', [OptionGroupController::class, 'updateOption']);
-        Route::delete('/option-groups/{group}/options/{option}', [OptionGroupController::class, 'destroyOption']);
+            Route::post('/{group}/options', [OptionGroupController::class, 'storeOption']);
+            Route::put('/{group}/options/{option}', [OptionGroupController::class, 'updateOption']);
+            Route::delete('/{group}/options/{option}', [OptionGroupController::class, 'destroyOption']);
+        });
 
-        // Attacher/détacher des groupes à une prestation
-        Route::get('/services/{service}/option-groups', [ServiceOptionGroupAttachController::class, 'index']);
-        Route::post('/services/{service}/option-groups/attach', [ServiceOptionGroupAttachController::class, 'attach']);
-        Route::post('/services/{service}/option-groups/detach', [ServiceOptionGroupAttachController::class, 'detach']);
-        Route::post('/services/{service}/option-groups/reorder', [ServiceOptionGroupAttachController::class, 'reorder']);
 
         // Upload images for options
         Route::post('/uploads', [UploadController::class, 'store']);
