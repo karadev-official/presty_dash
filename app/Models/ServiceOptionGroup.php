@@ -22,12 +22,14 @@ class ServiceOptionGroup extends Model
         'min_select',
         'max_select',
         'is_active',
+        'is_online',
         'position',
     ];
 
     protected $casts = [
         'is_required' => 'boolean',
         'is_active' => 'boolean',
+        'is_online' => 'boolean',
     ];
 
     public function user()

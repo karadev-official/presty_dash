@@ -6,35 +6,41 @@ use App\Models\ProductCategory;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ProductCategoryPolicy{
+class ProductCategoryPolicy
+{
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool
     {
-        //
+        return true;
     }
 
-    public function view(User $user, ProductCategory $productCategory): bool
+    public function view(User $user, ProductCategory $category): bool
     {
+        return $category->user_id === $user->id;
     }
 
     public function create(User $user): bool
     {
+        return true;
     }
 
-    public function update(User $user, ProductCategory $productCategory): bool
+    public function update(User $user, ProductCategory $category): bool
     {
+        return $category->user_id === $user->id;
     }
 
-    public function delete(User $user, ProductCategory $productCategory): bool
+    public function delete(User $user, ProductCategory $category): bool
     {
+        return $category->user_id === $user->id;
     }
 
-    public function restore(User $user, ProductCategory $productCategory): bool
+    public function restore(User $user, ProductCategory $category): bool
     {
+        //
     }
 
-    public function forceDelete(User $user, ProductCategory $productCategory): bool
+    public function forceDelete(User $user, ProductCategory $category): bool
     {
     }
 }

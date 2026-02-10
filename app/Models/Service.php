@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
 class Service extends Model
@@ -39,12 +41,12 @@ class Service extends Model
         $this->attributes['slug'] = $slug;
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ServiceCategory::class, 'service_category_id');
     }
 
-    public function optionGroups()
+    public function optionGroups(): BelongsToMany
     {
         return $this->belongsToMany(\App\Models\ServiceOptionGroup::class, 'service_service_option_group')
             ->withPivot(['position'])
@@ -52,7 +54,7 @@ class Service extends Model
             ->orderBy('service_service_option_group.position');
     }
 
-    public function images()
+    public function images() : BelongsToMany
     {
         return $this->belongsToMany(Image::class, 'image_service');
     }

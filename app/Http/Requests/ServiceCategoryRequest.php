@@ -4,17 +4,17 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ServiceCategoryRequest extends FormRequest{
+class ServiceCategoryRequest extends FormRequest
+{
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'exists:users'],
-'name' => ['required'],
-'slug' => ['required'],
-'is_active' => ['boolean'],
-'is_online' => ['nullable', 'boolean'],
-'position' => ['required', 'integer'],
-'agenda_color' => ['nullable'],//
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255'],
+            'is_active' => ['sometimes', 'boolean'],
+            'is_online' => ['sometimes', 'boolean'],
+            'position' => ['sometimes', 'integer', 'min:0'],
+            'agenda_color' => ['sometimes', 'string', 'max:7'],
         ];
     }
 

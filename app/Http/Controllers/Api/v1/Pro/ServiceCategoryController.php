@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1\Pro;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ServiceCategoryRequest;
 use App\Models\ServiceCategory;
 use Illuminate\Http\Request;
 
@@ -46,30 +47,9 @@ class ServiceCategoryController extends Controller
         );
     }
 
-    public function store(Request $request)
+    public function store(ServiceCategoryRequest $request)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255'],
-            'is_active' => ['sometimes', 'boolean'],
-            'is_online' => ['sometimes', 'boolean'],
-            'position' => ['sometimes', 'integer', 'min:0'],
-            'agenda_color' => ['sometimes', 'string', 'max:7'],
-        ]);
-
-        if (!isset($data['position'])) {
-            $data['position'] = ServiceCategory::where("user_id", $request->user()->id)
-                ->max('position') + 1;
-        }
-
-        // vérifier unicité du slug par pro
-        $exists = ServiceCategory::where('user_id', $request->user()->id)
-            ->where('slug', $data['slug'])
-            ->exists();
-
-        if ($exists) {
-            return response()->json(['message' => 'La catégorie existe déjà.'], 422);
-        }
+        $data = $request->validated();
 
         $category = ServiceCategory::create([
             'user_id' => $request->user()->id,

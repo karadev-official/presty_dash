@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class ServiceCategory extends Model
@@ -27,7 +29,7 @@ class ServiceCategory extends Model
     ];
 
     // setter de la position automatique
-    protected static function booted()
+    protected static function booted(): void
     {
         static::creating(function ($category) {
             if (is_null($category->position)) {
@@ -37,7 +39,7 @@ class ServiceCategory extends Model
         });
     }
 
-    public function setSlugAttribute($value)
+    public function setSlugAttribute($value): void
     {
         $originalSlug = Str::slug($value);
         $slug = $originalSlug;
@@ -51,12 +53,12 @@ class ServiceCategory extends Model
 
 
 
-    public function services()
+    public function services() : HasMany
     {
         return $this->hasMany(Service::class);
     }
 
-    public function user()
+    public function user() : BelongsTo
     {
         return $this->belongsTo(User::class);
     }

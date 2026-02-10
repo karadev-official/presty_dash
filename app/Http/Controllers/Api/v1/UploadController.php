@@ -12,8 +12,6 @@ class UploadController extends Controller
 {
     public function store(Request $request)
     {
-        Log::info($request->file('file'));
-        Log::info($request->all());
         $request->validate([
             'file' => ['required', 'file', 'image', 'max:4096'], // 4MB
         ]);
