@@ -33,7 +33,7 @@ class User extends Authenticatable
     ];
 
     protected $appends = [
-        'avatar_url', // ✅ pratique pour le front
+        'avatar_url', //
     ];
 
     /**
@@ -86,6 +86,11 @@ class User extends Authenticatable
     public function avatarImage(): BelongsTo
     {
         return $this->belongsTo(Image::class, 'avatar_image_id');
+    }
+
+    public function ProfessionalProfile(): HasOne
+    {
+        return $this->hasOne(ProfessionalProfile::class, 'pro_user_id');
     }
 
     public function getAvatarUrlAttribute(): ?string

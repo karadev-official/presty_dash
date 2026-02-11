@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Models\ProfessionalProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -72,7 +73,6 @@ class AuthController extends Controller
         $data = $request->validated();
         $user = User::create([
             'name' => $data['name'],
-            'specialty' => $data['register_role'] === 'pro' ? ($data['specialty'] ?? null) : null,
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
@@ -89,6 +89,10 @@ class AuthController extends Controller
 
         // ✅ Si c’est un pro : créer la ressource self tout de suite
         if ($data['register_role'] === 'pro' && !$user->defaultResource()->exists()) {
+            $user->ProfessionalProfile()->create([
+                'specialty' => $data['specialty'] ?? null
+            ]);
+
             $user->resources()->create([
                 'name' => $user->name ?? 'Moi',
                 'specialty' => $user->specialty,   // ✅ reprend la specialty du pro

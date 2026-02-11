@@ -28,7 +28,6 @@ class RegisterRequest extends FormRequest
             'device_name' => 'required|string',
             'register_role' => 'nullable|in:customer,pro',
 
-            // specialty obligatoire pour pro
             'specialty' => ['required_if:register_role,pro', 'nullable', 'string', 'max:255'],
         ];
     }
