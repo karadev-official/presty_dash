@@ -6,14 +6,15 @@ use App\Http\Controllers\Api\v1\Pro\AvailabilityController;
 use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
 use App\Http\Controllers\Api\v1\Pro\ProductCategoryController;
 use App\Http\Controllers\Api\v1\Pro\ProductController;
+use App\Http\Controllers\Api\v1\Pro\ProfessionalWorkLocationController;
 use App\Http\Controllers\Api\v1\Pro\ProfileController;
 use App\Http\Controllers\Api\v1\Pro\ResourceController;
-use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
 use App\Http\Controllers\Api\v1\Pro\ServiceCategoryController;
 use App\Http\Controllers\Api\v1\Pro\ServiceController;
+use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
 use App\Http\Controllers\Api\v1\UploadController;
-use Faker\Factory;
 use App\Models\User;
+use Faker\Factory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -144,9 +145,11 @@ Route::prefix('v1')->group(function () {
             Route::put('/{resource}/image', [ResourceController::class, 'updateImage']);
         });
 
-        Route::prefix('pro/availability')->group(function () {
-            Route::get('/', [AvailabilityController::class, 'show']);
-            Route::put('/', [AvailabilityController::class, 'update']);
+        Route::prefix('pro/')->group(function () {
+            Route::get('/availability', [AvailabilityController::class, 'show']);
+            Route::put('/availability', [AvailabilityController::class, 'update']);
+
+            Route::get("/workplaces", [ProfessionalWorkLocationController::class, 'index']);
         });
     });
 });

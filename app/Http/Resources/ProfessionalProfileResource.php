@@ -17,10 +17,6 @@ class ProfessionalProfileResource extends JsonResource
             'company_name' => $this->company_name,
             'siret' => $this->siret,
             'description' => $this->description,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-
-            'pro_user_id' => $this->pro_user_id,
         ];
     }
 }

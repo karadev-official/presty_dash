@@ -20,8 +20,8 @@ class AddressResource extends JsonResource
             'additional_info' => $this->additional_info,
             'lat' => $this->lat,
             'lng' => $this->lng,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+//            'created_at' => $this->created_at,
+//            'updated_at' => $this->updated_at,
         ];
     }
 }
