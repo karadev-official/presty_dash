@@ -8,14 +8,25 @@ class AddressRequest extends FormRequest
 {
     public function rules(): array
     {
+        if(request()->isMethod("POST")) {
+            return [
+                'street' => ['required'],
+                'city' => ['required'],
+                'postal_code' => ['required'],
+                'country' => ['required'],
+                'additional_info' => ['nullable'],
+                'lat' => ['nullable', 'numeric'],
+                'lng' => ['nullable', 'numeric'],
+            ];
+        }
         return [
-            'street' => ['required'],
-            'city' => ['required'],
-            'postal_code' => ['required'],
-            'country' => ['required'],
-            'additional_info' => ['required'],
-            'lat' => ['nullable', 'numeric'],
-            'lng' => ['nullable', 'numeric'],
+            'street' => ['sometimes','required'],
+            'city' => ['sometimes','required'],
+            'postal_code' => ['sometimes','required'],
+            'country' => ['sometimes','required'],
+            'additional_info' => ['sometimes','nullable'],
+            'lat' => ['sometimes','nullable', 'numeric'],
+            'lng' => ['sometimes','nullable', 'numeric'],
         ];
     }
 

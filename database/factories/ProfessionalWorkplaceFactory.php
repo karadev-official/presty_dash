@@ -4,13 +4,13 @@ namespace Database\Factories;
 
 use App\Models\Address;
 use App\Models\ProfessionalProfile;
-use App\Models\ProfessionalWorkLocation;
+use App\Models\ProfessionalWorkplace;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class ProfessionalWorkLocationFactory extends Factory
+class ProfessionalWorkplaceFactory extends Factory
 {
-    protected $model = ProfessionalWorkLocation::class;
+    protected $model = ProfessionalWorkplace::class;
 
     public function definition(): array
     {

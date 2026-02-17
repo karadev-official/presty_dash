@@ -2,12 +2,12 @@
 
 namespace App\Http\Resources;
 
-use App\Models\ProfessionalWorkLocation;
+use App\Models\ProfessionalWorkplace;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin ProfessionalWorkLocation */
-class ProfessionalWorkLocationResource extends JsonResource
+/** @mixin ProfessionalWorkplace */
+class ProfessionalWorkplaceResource extends JsonResource
 {
     public function toArray(Request $request): array
     {

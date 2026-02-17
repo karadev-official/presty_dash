@@ -25,8 +25,8 @@ class ProfessionalProfile extends Model
         return $this->belongsTo(User::class, 'pro_user_id');
     }
 
-    public function workLocations(): HasMany
+    public function workplaces(): HasMany
     {
-        return $this->hasMany(ProfessionalWorkLocation::class);
+        return $this->hasMany(ProfessionalWorkplace::class);
     }
 }

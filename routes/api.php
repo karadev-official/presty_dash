@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\Api\v1\AddressController;
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\ImageController;
 use App\Http\Controllers\Api\v1\Pro\AvailabilityController;
 use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
 use App\Http\Controllers\Api\v1\Pro\ProductCategoryController;
 use App\Http\Controllers\Api\v1\Pro\ProductController;
-use App\Http\Controllers\Api\v1\Pro\ProfessionalWorkLocationController;
+use App\Http\Controllers\Api\v1\Pro\ProfessionalWorkplaceController;
 use App\Http\Controllers\Api\v1\Pro\ProfileController;
 use App\Http\Controllers\Api\v1\Pro\ResourceController;
 use App\Http\Controllers\Api\v1\Pro\ServiceCategoryController;
@@ -149,7 +150,18 @@ Route::prefix('v1')->group(function () {
             Route::get('/availability', [AvailabilityController::class, 'show']);
             Route::put('/availability', [AvailabilityController::class, 'update']);
 
-            Route::get("/workplaces", [ProfessionalWorkLocationController::class, 'index']);
+            Route::get("/workplaces", [ProfessionalWorkplaceController::class, 'index']);
+            Route::post("/workplaces", [ProfessionalWorkplaceController::class, 'store']);
+            Route::get("/workplaces/{workplace}", [ProfessionalWorkplaceController::class, 'show']);
+            Route::put("/workplaces/{workplace}", [ProfessionalWorkplaceController::class, 'update']);
+            Route::delete("/workplaces/{workplace}", [ProfessionalWorkplaceController::class, 'destroy']);
+        });
+
+        Route::prefix('addresses')->group(function () {
+           Route::get('/', [AddressController::class, 'index']);
+           Route::get('/{address}', [AddressController::class, 'show']);
+           Route::post('/', [AddressController::class, 'store']);
+           Route::put('/{address}', [AddressController::class, 'update']);
         });
     });
 });

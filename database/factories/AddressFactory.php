@@ -13,7 +13,7 @@ class AddressFactory extends Factory
     public function definition(): array
     {
         return [
-            'street' => $this->faker->streetName(),
+            'street' => $this->faker->numberBetween(1, 20) ." ". $this->faker->streetName(),
             'city' => $this->faker->city(),
             'postal_code' => $this->faker->postcode(),
             'country' => $this->faker->country(),
