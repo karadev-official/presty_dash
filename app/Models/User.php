@@ -89,7 +89,7 @@ class User extends Authenticatable
         return $this->belongsTo(Image::class, 'avatar_image_id');
     }
 
-    public function professionalProfile(): HasOne
+    public function ProfessionalProfile(): HasOne
     {
         return $this->hasOne(ProfessionalProfile::class, 'pro_user_id');
     }
@@ -99,7 +99,7 @@ class User extends Authenticatable
         return $this->avatarImage?->url;
     }
 
-    public function address(): BelongsTo
+    public function Address(): BelongsTo
     {
         return $this->belongsTo(Address::class, 'address_id');
     }

@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\ProfessionalWorkplace;
+use App\Models\Workplace;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class workplacePolicy
+class WorkplacePolicy
 {
     use HandlesAuthorization;
 
@@ -14,7 +14,7 @@ class workplacePolicy
     {
     }
 
-    public function view(User $user, ProfessionalWorkplace $workplace): bool
+    public function view(User $user, Workplace $workplace): bool
     {
         return $user->professionalProfile->id == $workplace->professional_profile_id;
     }
@@ -24,22 +24,22 @@ class workplacePolicy
         return $user->hasRole(['pro', 'super-admin']);
     }
 
-    public function update(User $user, ProfessionalWorkplace $workplace): bool
+    public function update(User $user, Workplace $workplace): bool
     {
         return $user->professionalProfile->id == $workplace->professional_profile_id;
     }
 
-    public function delete(User $user, ProfessionalWorkplace $workplace): bool
+    public function delete(User $user, Workplace $workplace): bool
     {
         return $user->professionalProfile->id == $workplace->professional_profile_id;
     }
 
-    public function restore(User $user, ProfessionalWorkplace $workplace): bool
+    public function restore(User $user, Workplace $workplace): bool
     {
         return false;
     }
 
-    public function forceDelete(User $user, ProfessionalWorkplace $workplace): bool
+    public function forceDelete(User $user, Workplace $workplace): bool
     {
         return false;
     }

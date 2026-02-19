@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use App\Policies\workplacePolicy;
+use App\Policies\WorkplacePolicy;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[UsePolicy(workplacePolicy::class)]
-class ProfessionalWorkplace extends Model
+#[UsePolicy(WorkplacePolicy::class)]
+class Workplace extends Model
 {
     use HasFactory, SoftDeletes;
 

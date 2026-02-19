@@ -18,6 +18,7 @@ class UserResource extends JsonResource
             'avatar_url' => $this->avatar_url,
             'email' => $this->email,
             'role' => $this->roles->first()?->name ?? null,
+            'initials' => $this->initials(),
             'created_at' => $this->created_at?->toISOString(),
             'professional_profile' => new ProfessionalProfileResource($this->ProfessionalProfile)
         ];

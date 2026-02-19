@@ -27,6 +27,6 @@ class ProfessionalProfile extends Model
 
     public function workplaces(): HasMany
     {
-        return $this->hasMany(ProfessionalWorkplace::class);
+        return $this->hasMany(Workplace::class);
     }
 }
