@@ -10,8 +10,9 @@ return new class extends Migration {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('professional_profile_id')->constrained('professional_profiles')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('avatar_image_id')->constrained('images')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('avatar_image_id')->nullable()->constrained('images')->onDelete('cascade');
+            $table->foreignId('address_id')->nullable()->constrained('addresses')->onDelete('set null');
             $table->string('display_name')->nullable()->comment('Surnom/nom d\'affichage personnalisé');
             $table->text('notes')->nullable()->comment('Notes privées du pro sur ce client');
             $table->string('custom_phone')->nullable()->comment('Téléphone alternatif spécifique');

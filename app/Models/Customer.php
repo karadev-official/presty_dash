@@ -47,8 +47,8 @@ class Customer extends Model
             'preferences' => 'array',
             'is_favorite' => 'boolean',
             'is_blocked' => 'boolean',
-//            'first_visit_at' => 'timestamp',
-//            'last_visit_at' => 'timestamp',
+            'first_visit_at' => 'timestamp',
+            'last_visit_at' => 'timestamp',
             'total_appointments' => 'integer',
             'total_spent' => 'integer',
         ];
@@ -76,7 +76,7 @@ class Customer extends Model
 
     public function getAvatarAttribute(): ?string
     {
-        return $this->avatarImage?->url ?? $this->user->avatar_url;
+        return $this->avatarImage?->url ?? $this->user?->avatar_url;
     }
 
     public function getInitialsAttribute(): string

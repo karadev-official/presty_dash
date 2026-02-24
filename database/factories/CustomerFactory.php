@@ -17,7 +17,7 @@ class CustomerFactory extends Factory
     {
         return [
             'display_name' => $this->faker->name(),
-            'notes' => $this->faker->word(),
+            'notes' => $this->faker->sentence(),
             'custom_phone' => $this->faker->phoneNumber(),
             'custom_email' => $this->faker->unique()->safeEmail(),
             'tags' => $this->faker->words(),
