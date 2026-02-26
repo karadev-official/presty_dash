@@ -1,14 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\v1\Pro;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Traits\ApiResponder;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
+    use ApiResponder;
     public function index(Request $request)
     {
         $professional_profile_id = $request->user()->ProfessionalProfile->id;
@@ -25,14 +28,12 @@ class CustomerController extends Controller
     public function show(Customer $customer)
     {
         $this->authorize('view', $customer);
-
-        return new CustomerResource($customer);
+        return $this->success(new CustomerResource($customer));
     }
 
     public function update(CustomerRequest $request, Customer $customer)
     {
         $this->authorize('update', $customer);
-
         $customer->update($request->validated());
 
         return new CustomerResource($customer);

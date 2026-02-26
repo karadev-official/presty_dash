@@ -47,4 +47,15 @@ class Product extends Model
             'is_online' => 'boolean',
         ];
     }
+
+    /**
+     * Rendez-vous utilisant ce produit
+     */
+    public function appointments(): BelongsToMany
+    {
+        return $this->belongsToMany(Appointment::class, 'appointment_products')
+            ->using(AppointmentProduct::class)
+            ->withPivot(['price', 'quantity', 'total', 'notes'])
+            ->withTimestamps();
+    }
 }

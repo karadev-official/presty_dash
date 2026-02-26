@@ -13,6 +13,8 @@ return new class extends Migration {
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->foreignId('resource_id')->nullable()->constrained('resources')->onDelete('set null');
 
+            $table->foreignId('workplace_id')->nullable()->constrained('workplaces')->onDelete('set null');
+
             // Date et heure
             $table->date('date')->comment('Date du rendez-vous');
             $table->time('start_time')->comment('Heure de début');
@@ -72,6 +74,7 @@ return new class extends Migration {
             $table->index(['status', 'date'], 'idx_status_date');
             $table->index(['payment_status'], 'idx_payment_status');
             $table->index(['date', 'start_time'], 'idx_datetime');
+            $table->index(['workplace_id', 'date'], 'idx_workplace_date');
         });
     }
 

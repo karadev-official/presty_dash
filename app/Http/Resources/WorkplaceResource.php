@@ -21,7 +21,6 @@ class WorkplaceResource extends JsonResource
             'professional_profile_id' => $this->professional_profile_id,
             'address_id' => $this->address_id,
 
-//            'professional_profile' => new ProfessionalProfileResource($this->professionalProfile),
             'address' => new AddressResource($this->address),
         ];
     }

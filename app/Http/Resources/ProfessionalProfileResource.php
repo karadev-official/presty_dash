@@ -17,6 +17,7 @@ class ProfessionalProfileResource extends JsonResource
             'company_name' => $this->company_name,
             'siret' => $this->siret,
             'description' => $this->description,
+            'workplaces' => WorkplaceResource::collection($this->workplaces),
         ];
     }
 }

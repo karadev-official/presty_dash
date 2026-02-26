@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\v1\Pro;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\AppointmentServiceRequest;
 use App\Http\Resources\AppointmentServiceResource;
 use App\Models\AppointmentService;

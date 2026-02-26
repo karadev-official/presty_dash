@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Appointment extends Model
@@ -15,6 +16,7 @@ class Appointment extends Model
         'professional_profile_id',
         'customer_id',
         'resource_id',
+        'workplace_id',
         'date',
         'start_time',
         'end_time',
@@ -62,12 +64,38 @@ class Appointment extends Model
         return $this->belongsTo(User::class, 'cancelled_by');
     }
 
+    public function workplace(): BelongsTo
+    {
+        return $this->belongsTo(Workplace::class);
+    }
+
+    public function services(): BelongsToMany
+    {
+        return $this->belongsToMany(Service::class, 'appointment_service')
+            ->using(AppointmentService::class)
+            ->withPivot(['price', 'duration', 'quantity', 'total' ,'notes'])
+            ->withTimestamps();
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'appointment_products')
+            ->using(AppointmentProduct::class)
+            ->withPivot(['price', 'quantity', 'total', 'notes'])
+            ->withTimestamps();
+    }
+
     protected function casts(): array
     {
         return [
             'date' => 'date',
-            'status' => 'array',
-            'payment_status' => 'array',
+            'start_time' => 'datetime:H:i',
+            'end_time' => 'datetime:H:i',
+            'duration' => 'integer',
+            'subtotal' => 'integer',
+            'discount' => 'integer',
+            'total' => 'integer',
+            'deposit_amount' => 'integer',
             'deposit_paid_at' => 'timestamp',
             'paid_at' => 'timestamp',
             'cancelled_at' => 'timestamp',

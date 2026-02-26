@@ -3,18 +3,19 @@
 use App\Http\Controllers\Api\v1\AddressController;
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\ImageController;
+use App\Http\Controllers\Api\v1\Pro\AppointmentController;
 use App\Http\Controllers\Api\v1\Pro\AvailabilityController;
+use App\Http\Controllers\Api\v1\Pro\CustomerController;
 use App\Http\Controllers\Api\v1\Pro\OptionGroupController;
 use App\Http\Controllers\Api\v1\Pro\ProductCategoryController;
 use App\Http\Controllers\Api\v1\Pro\ProductController;
-use App\Http\Controllers\Api\v1\Pro\WorkplaceController;
 use App\Http\Controllers\Api\v1\Pro\ProfileController;
 use App\Http\Controllers\Api\v1\Pro\ResourceController;
 use App\Http\Controllers\Api\v1\Pro\ServiceCategoryController;
 use App\Http\Controllers\Api\v1\Pro\ServiceController;
 use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
+use App\Http\Controllers\Api\v1\Pro\WorkplaceController;
 use App\Http\Controllers\Api\v1\UploadController;
-use App\Http\Controllers\CustomerController;
 use App\Models\User;
 use Faker\Factory;
 use Illuminate\Http\Request;
@@ -150,12 +151,9 @@ Route::prefix('v1')->group(function () {
         Route::prefix('pro/')->group(function () {
             Route::get('/availability', [AvailabilityController::class, 'show']);
             Route::put('/availability', [AvailabilityController::class, 'update']);
+            Route::apiResource("workplaces", WorkplaceController::class);
 
-            Route::get("/workplaces", [WorkplaceController::class, 'index']);
-            Route::post("/workplaces", [WorkplaceController::class, 'store']);
-            Route::get("/workplaces/{workplace}", [WorkplaceController::class, 'show']);
-            Route::put("/workplaces/{workplace}", [WorkplaceController::class, 'update']);
-            Route::delete("/workplaces/{workplace}", [WorkplaceController::class, 'destroy']);
+            Route::apiResource('appointments', AppointmentController::class);
         });
 
         Route::prefix('addresses')->group(function () {
@@ -165,14 +163,9 @@ Route::prefix('v1')->group(function () {
            Route::put('/{address}', [AddressController::class, 'update']);
         });
 
-        Route::prefix('customers')->group(function () {
-            Route::get('/', [CustomerController::class, 'index']);
-            Route::get('/{customer}', [CustomerController::class, 'show']);
-            Route::post('/', [CustomerController::class, 'store']);
-            Route::post("/{customer}/toggleFavorite", [CustomerController::class, 'toggleFavorite']);
-            Route::post("/{customer}/toggleBlock", [CustomerController::class, 'toggleBlock']);
-            Route::put('/{customer}', [CustomerController::class, 'update']);
-            Route::delete('/{customer}', [CustomerController::class, 'destroy']);
-        });
+
+        Route::apiResource("/customers", CustomerController::class);
+        Route::post("/customers/{customer}/toggleFavorite", [CustomerController::class, 'toggleFavorite']);
+        Route::post("/customers/{customer}/toggleBlock", [CustomerController::class, 'toggleBlock']);
     });
 });

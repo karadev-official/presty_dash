@@ -48,7 +48,7 @@ class Service extends Model
 
     public function optionGroups(): BelongsToMany
     {
-        return $this->belongsToMany(\App\Models\ServiceOptionGroup::class, 'service_service_option_group')
+        return $this->belongsToMany(ServiceOptionGroup::class, 'service_service_option_group')
             ->withPivot(['position'])
             ->withTimestamps()
             ->orderBy('service_service_option_group.position');
@@ -57,5 +57,13 @@ class Service extends Model
     public function images() : BelongsToMany
     {
         return $this->belongsToMany(Image::class, 'image_service');
+    }
+
+    public function appointments(): BelongsToMany
+    {
+        return $this->belongsToMany(Appointment::class, 'appointment_services')
+            ->using(AppointmentService::class)
+            ->withPivot(['price', 'duration', 'quantity', 'total', 'notes'])
+            ->withTimestamps();
     }
 }

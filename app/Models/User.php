@@ -103,4 +103,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Address::class, 'address_id');
     }
+
+    public function isPro(): bool
+    {
+        return $this->hasRole('pro');
+    }
 }
