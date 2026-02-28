@@ -28,11 +28,10 @@ class CustomerResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'initials' => $this->initials,
-//            'professional_profile_id' => $this->professional_profile_id,
-//            'user_id' => $this->user_id,
+            'professional_profile_id' => $this->professional_profile_id,
+            'user_id' => $this->user_id,
             'avatar' => $this->avatar,
-//            'professionalProfile' => new ProfessionalProfileResource($this->professionalProfile),
-//            'user' => new UserResource($this->whenLoaded('user')),
+            'appointments' => AppointmentResource::collection($this->appointments)
         ];
     }
 }

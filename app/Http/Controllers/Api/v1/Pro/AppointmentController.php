@@ -27,7 +27,7 @@ class AppointmentController extends Controller
         $data = $request->validated();
 
         $appointment = new Appointment();
-        DB::transaction(function () use (&$appointment, $request, $data) {
+        DB::transaction(function () use (&$appointment, $data) {
             $appointment->fill($data);
             $appointment->save();
 
@@ -74,7 +74,6 @@ class AppointmentController extends Controller
                 }
             }
         });
-
         return new AppointmentResource($appointment);
     }
 
@@ -88,9 +87,78 @@ class AppointmentController extends Controller
     public function update(AppointmentRequest $request, Appointment $appointment)
     {
         $this->authorize('update', $appointment);
+        $data = $request->validated();
 
-        $appointment->update($request->validated());
+        DB::transaction(function () use (&$appointment, $data) {
+            // Mettre à jour les champs principaux
+            $appointment->update($data);
 
+            // ✅ Supprimer les anciens services et leurs options
+            if (isset($data['services'])) {
+                // Supprimer les options des anciens services
+                foreach ($appointment->services as $oldService) {
+                    $oldService->options()->delete();
+                }
+                // Supprimer les anciens services
+                $appointment->services()->delete();
+
+                // ✅ Créer les nouveaux services
+                foreach ($data['services'] as $service) {
+                    $newService = AppointmentService::create([
+                        'appointment_id' => $appointment->id,
+                        'service_id' => $service['service_id'],
+                        'price' => $service['price'],
+                        'duration' => $service['duration'],
+                        'quantity' => $service['quantity'],
+                        'total' => $service['total'],
+                        'notes' => $service['notes'] ?? null,
+                    ]);
+
+                    // ✅ Créer les options du service
+                    if (isset($service['options']) && is_array($service['options'])) {
+                        foreach ($service['options'] as $option) {
+                            AppointmentServiceOption::create([
+                                'appointment_service_id' => $newService->id,
+                                'service_option_id' => $option['service_option_id'],
+                                'service_option_group_id' => $option['service_option_group_id'],
+                                'option_name' => $option['option_name'],
+                                'group_name' => $option['group_name'],
+                                'price' => $option['price'],
+                                'duration' => $option['duration'],
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // ✅ Supprimer les anciens produits et créer les nouveaux
+            if (isset($data['products'])) {
+                // Supprimer les anciens produits
+                $appointment->products()->delete();
+
+                // ✅ Créer les nouveaux produits
+                foreach ($data['products'] as $product) {
+                    AppointmentProduct::create([
+                        'appointment_id' => $appointment->id,
+                        'product_id' => $product['product_id'],
+                        'price' => $product['price'],
+                        'quantity' => $product['quantity'],
+                        'total' => $product['total'],
+                        'notes' => $product['notes'] ?? null,
+                    ]);
+                }
+            }
+        });
+
+        // Recharger les relations pour le retour
+        $appointment->load(['customer', 'services.service', 'services.options', 'products.product']);
+        return new AppointmentResource($appointment);
+    }
+
+    public function cancel(Appointment $appointment)
+    {
+        $this->authorize('cancel', $appointment);
+        $appointment->cancel();
         return new AppointmentResource($appointment);
     }
 

@@ -30,6 +30,11 @@ class AppointmentPolicy
         return $user->professionalProfile->id == $appointment->professional_profile_id;
     }
 
+    public function cancel(User $user, Appointment $appointment): bool
+    {
+        return $user->professionalProfile->id == $appointment->professional_profile_id;
+    }
+
     public function delete(User $user, Appointment $appointment): bool
     {
         return $user->professionalProfile->id == $appointment->professional_profile_id;

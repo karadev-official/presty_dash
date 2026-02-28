@@ -29,4 +29,29 @@ class ProfessionalProfile extends Model
     {
         return $this->hasMany(Workplace::class);
     }
+
+    /**
+     * Rendez-vous du professionnel
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    /**
+     * Rendez-vous à venir
+     */
+    public function upcomingAppointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class)
+            ->upcoming()
+            ->with(['customer', 'services', 'products']);
+    }
+
+    public function todayAppointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class)
+            ->today()
+            ->with(['customer', 'services', 'products']);
+    }
 }

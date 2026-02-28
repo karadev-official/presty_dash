@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -40,6 +42,11 @@ class Customer extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
     protected function casts(): array
     {
         return [
@@ -47,8 +54,8 @@ class Customer extends Model
             'preferences' => 'array',
             'is_favorite' => 'boolean',
             'is_blocked' => 'boolean',
-            'first_visit_at' => 'timestamp',
-            'last_visit_at' => 'timestamp',
+            'first_visit_at' => 'datetime',
+            'last_visit_at' => 'datetime',
             'total_appointments' => 'integer',
             'total_spent' => 'integer',
         ];
@@ -348,5 +355,17 @@ class Customer extends Model
     {
         $this->update(['total_spent' => 0]);
         return $this;
+    }
+
+    /**
+     * Prochain rendez-vous
+     */
+    public function nextAppointment(): HasOne|Customer
+    {
+        return $this->hasOne(Appointment::class)
+            ->whereDate('date', '>', now())
+            ->whereNotIn('status', ['cancelled'])
+            ->orderBy('date')
+            ->orderBy('start_time');
     }
 }

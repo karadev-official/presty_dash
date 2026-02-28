@@ -45,8 +45,17 @@ class AppointmentResource extends JsonResource
             'resource_id' => $this->resource_id,
             'cancelled_by' => $this->cancelled_by,
 
-            'professionalProfile' => new ProfessionalProfileResource($this->whenLoaded('professionalProfile')),
-            'customer' => new CustomerResource($this->whenLoaded('customer')),
+            'services' => $this->services,
+            'products' => $this->products,
+
+            'customer' => [
+                'id' => $this->customer->id,
+                'display_name' => $this->customer->display_name,
+                'custom_phone' => $this->customer->custom_phone,
+                'custom_email' => $this->customer->custom_email,
+                'initials' => $this->customer->initials,
+            ],
+            'workplace' => new WorkplaceResource($this->workplace),
             'cancelledBy' => new UserResource($this->whenLoaded('cancelledBy')),
         ];
     }

@@ -13,6 +13,7 @@ class AppointmentRequest extends FormRequest
                 'professional_profile_id' => ['required', 'exists:professional_profiles,id'],
                 'customer_id' => ['required', 'exists:customers,id'],
                 'resource_id' => ['nullable', 'exists:resources,id'],
+                'workplace_id' => ['nullable', 'exists:workplaces,id'],
                 'date' => ['required', 'date'],
                 'start_time' => ['required', 'date_format:H:i'],
                 'end_time' => ['required', 'date_format:H:i'],
@@ -64,11 +65,12 @@ class AppointmentRequest extends FormRequest
             ];
         }
         return [
-            'customer_id' => ['sometimes','required', 'exists:customers'],
-            'resource_id' => ['sometimes','nullable', 'exists:resources'],
-            'date' => ['sometimes','required', 'date'],
-            'start_time' => ['sometimes','required', 'date'],
-            'end_time' => ['sometimes','required', 'date'],
+            'customer_id' => ['sometimes','required', 'exists:customers,id'],
+            'resource_id' => ['sometimes','nullable', 'exists:resources,id'],
+            'workplace_id' => ['sometimes','required', 'exists:workplaces,id'],
+            'date' => ['sometimes', 'required', 'date'],
+            'start_time' => ['sometimes','required', 'date_format:H:i'],
+            'end_time' => ['sometimes','required', 'date_format:H:i'],
             'duration' => ['sometimes','required', 'integer'],
             'status' => ['sometimes','required'],
             'subtotal' => ['sometimes','required', 'integer'],

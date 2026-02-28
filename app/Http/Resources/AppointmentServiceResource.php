@@ -24,8 +24,8 @@ class AppointmentServiceResource extends JsonResource
             'appointment_id' => $this->appointment_id,
             'service_id' => $this->service_id,
 
-            'appointment' => new AppointmentResource($this->whenLoaded('appointment')),
-            'service' => new ServiceResource($this->whenLoaded('service')),
+//            'appointment' => new AppointmentResource($this->whenLoaded('appointment')),
+//            'service' => new ServiceResource($this->whenLoaded('service')),
         ];
     }
 }

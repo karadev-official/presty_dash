@@ -154,6 +154,7 @@ Route::prefix('v1')->group(function () {
             Route::apiResource("workplaces", WorkplaceController::class);
 
             Route::apiResource('appointments', AppointmentController::class);
+            Route::put('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel']);
         });
 
         Route::prefix('addresses')->group(function () {
