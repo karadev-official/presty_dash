@@ -21,16 +21,9 @@ class AppointmentResource extends JsonResource
             'subtotal' => $this->subtotal,
             'discount' => $this->discount,
             'total' => $this->total,
+            'total_eur' => $this->totalEuros."€",
             'customer_notes' => $this->customer_notes,
             'internal_notes' => $this->internal_notes,
-            'payment_status' => $this->payment_status,
-            'deposit_amount' => $this->deposit_amount,
-            'deposit_paid_at' => $this->deposit_paid_at,
-            'deposit_payment_method' => $this->deposit_payment_method,
-            'amount_paid' => $this->amount_paid,
-            'remaining_amount' => $this->remaining_amount,
-            'paid_at' => $this->paid_at,
-            'payment_method' => $this->payment_method,
             'cancelled_at' => $this->cancelled_at,
             'cancellation_reason' => $this->cancellation_reason,
             'reminder_sent' => $this->reminder_sent,
@@ -38,7 +31,6 @@ class AppointmentResource extends JsonResource
             'confirmed_at' => $this->confirmed_at,
             'completed_at' => $this->completed_at,
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
 
             'professional_profile_id' => $this->professional_profile_id,
             'customer_id' => $this->customer_id,
@@ -56,7 +48,8 @@ class AppointmentResource extends JsonResource
                 'initials' => $this->customer->initials,
             ],
             'workplace' => new WorkplaceResource($this->workplace),
-            'cancelledBy' => new UserResource($this->whenLoaded('cancelledBy')),
+            'cancelledBy' => new UserResource($this->cancelledBy),
+            'payments' => AppointmentPaymentResource::collection($this->payments),
         ];
     }
 }

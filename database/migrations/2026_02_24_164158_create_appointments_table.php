@@ -33,22 +33,6 @@ return new class extends Migration {
             $table->text('customer_notes')->nullable()->comment("Notes du client");
             $table->text('internal_notes')->nullable()->comment("Notes privées du pro");
 
-            // Paiement
-            $table->enum('payment_status', ['pending', 'partial', 'paid', 'refunded'])
-                ->default('pending')
-                ->comment('Statut du paiement');
-
-            // Acompte
-            $table->unsignedBigInteger('deposit_amount')->default(0)->comment('Montant de l\'acompte en centimes');
-            $table->timestamp('deposit_paid_at')->nullable()->comment('Date du paiement de l\'acompte');
-            $table->string('deposit_payment_method')->nullable()->comment('Méthode de paiement de l\'acompte');
-
-            // Paiement final
-            $table->unsignedBigInteger('amount_paid')->default(0)->comment('Montant total payé en centimes');
-            $table->unsignedBigInteger('remaining_amount')->default(0)->comment('Montant restant à payer en centimes');
-            $table->timestamp('paid_at')->nullable()->comment('Date du paiement complet');
-            $table->string('payment_method')->nullable()->comment('Méthode de paiement final');
-
             // Annulation
             $table->timestamp('cancelled_at')->nullable();
             $table->text('cancellation_reason')->nullable();
@@ -72,7 +56,6 @@ return new class extends Migration {
             $table->index(['professional_profile_id', 'date', 'start_time'], 'idx_pro_datetime');
             $table->index(['customer_id', 'date'], 'idx_customer_date');
             $table->index(['status', 'date'], 'idx_status_date');
-            $table->index(['payment_status'], 'idx_payment_status');
             $table->index(['date', 'start_time'], 'idx_datetime');
             $table->index(['workplace_id', 'date'], 'idx_workplace_date');
         });

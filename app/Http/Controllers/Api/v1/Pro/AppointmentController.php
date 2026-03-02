@@ -9,6 +9,7 @@ use App\Models\Appointment;
 use App\Models\AppointmentProduct;
 use App\Models\AppointmentService;
 use App\Models\AppointmentServiceOption;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -148,10 +149,55 @@ class AppointmentController extends Controller
                     ]);
                 }
             }
+            if (isset($data['payments'])) {
+                $incomingPaymentIds = collect($data['payments'])
+                    ->pluck('id')
+                    ->filter() // Enlever les null
+                    ->toArray();
+
+                // 1. Supprimer les paiements qui ne sont plus dans la liste
+                $paymentsToDelete = $appointment->payments()
+                    ->whereNotIn('id', $incomingPaymentIds)
+                    ->get();
+
+                foreach ($paymentsToDelete as $payment) {
+                    $payment->forceDelete(); // ✅ Déclenche l'événement `deleted`
+                }
+
+                // 2. Créer ou mettre à jour les paiements
+                foreach ($data['payments'] as $paymentData) {
+                    if (isset($paymentData['id'])) {
+                        // ✅ Mise à jour d'un paiement existant
+                        $payment = $appointment->payments()->find($paymentData['id']);
+                        $payment?->update([
+                            'payment_method_id' => $paymentData['payment_method_id'],
+                            'amount' => $paymentData['amount'],
+                            'is_deposit' => $paymentData['is_deposit'] ?? false,
+                            'notes' => $paymentData['notes'] ?? null,
+                        ]);
+                    } else {
+                        // ✅ Création d'un nouveau paiement
+                        $appointment->payments()->create([
+                            'payment_method_id' => $paymentData['payment_method_id'],
+                            'amount' => $paymentData['amount'],
+                            'is_deposit' => $paymentData['is_deposit'] ?? false,
+                            'notes' => $paymentData['notes'] ?? null,
+                            'paid_at' => now(),
+                        ]);
+                    }
+                }
+            }
         });
 
         // Recharger les relations pour le retour
-        $appointment->load(['customer', 'services.service', 'services.options', 'products.product']);
+        $appointment->load([
+            'customer',
+            'services.service',
+            'services.options',
+            'products.product',
+            'payments.paymentMethod',
+            'workplace.address'
+        ]);
         return new AppointmentResource($appointment);
     }
 

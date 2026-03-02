@@ -29,14 +29,6 @@ class Appointment extends Model
         'total',
         'customer_notes',
         'internal_notes',
-        'payment_status',
-        'deposit_amount',
-        'deposit_paid_at',
-        'deposit_payment_method',
-        'amount_paid',
-        'remaining_amount',
-        'paid_at',
-        'payment_method',
         'cancelled_at',
         'cancellation_reason',
         'cancelled_by',
@@ -45,6 +37,17 @@ class Appointment extends Model
         'confirmed_at',
         'completed_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'duration' => 'integer',
+            'subtotal' => 'integer',
+            'discount' => 'integer',
+            'total' => 'integer',
+            'reminder_sent' => 'boolean',
+        ];
+    }
 
     public function professionalProfile(): BelongsTo
     {
@@ -61,14 +64,14 @@ class Appointment extends Model
         return $this->belongsTo(Resource::class);
     }
 
-    public function cancelledBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'cancelled_by');
-    }
-
     public function workplace(): BelongsTo
     {
         return $this->belongsTo(Workplace::class);
+    }
+
+    public function cancelledBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
     }
 
     public function services(): HasMany
@@ -81,119 +84,80 @@ class Appointment extends Model
         return $this->HasMany(AppointmentProduct::class);
     }
 
-    protected function casts(): array
+    public function payments(): HasMany
     {
-        return [
-            'duration' => 'integer',
-            'subtotal' => 'integer',
-            'discount' => 'integer',
-            'total' => 'integer',
-            'deposit_amount' => 'integer',
-            'reminder_sent' => 'boolean',
-        ];
+        return $this->hasMany(AppointmentPayment::class);
     }
 
     // ========================================
-    // ÉVÉNEMENTS (LOGIQUE DE STATS)
+    // ACCESSEURS (calculés depuis payments)
     // ========================================
 
-    protected static function booted(): void
-    {
-        // ========================================
-        // CRÉATION
-        // ========================================
-        static::created(function (Appointment $appointment) {
-            // ✅ TOUS les RDV (même cancelled) sont comptés
-            $appointment->customer->increment('total_appointments');
-
-            // ✅ Si un acompte a été versé ET que le RDV n'est pas cancelled
-            if ($appointment->status !== 'cancelled' && $appointment->deposit_amount > 0) {
-                $appointment->customer->increment('total_spent', $appointment->deposit_amount);
-            }
-        });
-
-        // ========================================
-        // MISE À JOUR
-        // ========================================
-        static::updated(function (Appointment $appointment) {
-            $customer = $appointment->customer;
-
-            // Si le statut passe à "cancelled"
-            if ($appointment->isDirty('status') && $appointment->status === 'cancelled') {
-                $oldStatus = $appointment->getOriginal('status');
-
-                if ($oldStatus !== 'cancelled') {
-                    // ❌ On ne décrémente PAS total_appointments (même cancelled compte)
-
-                    // ✅ Mais on soustrait les dépenses
-                    if ($appointment->amount_paid > 0) {
-                        $customer->decrement('total_spent', $appointment->amount_paid);
-                    }
-                }
-            }
-
-            // Si le statut passe de "cancelled" à un autre statut (réactivation)
-            if ($appointment->isDirty('status') && $appointment->status !== 'cancelled') {
-                $oldStatus = $appointment->getOriginal('status');
-
-                if ($oldStatus === 'cancelled') {
-                    // ✅ Ré-ajouter les dépenses
-                    if ($appointment->amount_paid > 0) {
-                        $customer->increment('total_spent', $appointment->amount_paid);
-                    }
-                }
-            }
-
-            // Si le montant payé change (et RDV non cancelled)
-            if ($appointment->isDirty('amount_paid') && $appointment->status !== 'cancelled') {
-                $oldAmountPaid = $appointment->getOriginal('amount_paid') ?? 0;
-                $difference = $appointment->amount_paid - $oldAmountPaid;
-
-                if ($difference > 0) {
-                    $customer->increment('total_spent', $difference);
-                } elseif ($difference < 0) {
-                    $customer->decrement('total_spent', abs($difference));
-                }
-            }
-
-            // Mettre à jour first_visit_at et last_visit_at
-            if ($appointment->status === 'completed' && $appointment->isDirty('status')) {
-                $visitDate = $appointment->completed_at ?? now();
-
-                if (!$customer->first_visit_at) {
-                    $customer->update(['first_visit_at' => $visitDate]);
-                }
-
-                $customer->update(['last_visit_at' => $visitDate]);
-            }
-        });
-
-        // ========================================
-        // SUPPRESSION
-        // ========================================
-        static::deleting(function (Appointment $appointment) {
-            $customer = $appointment->customer;
-
-            // ✅ Toujours décrémenter total_appointments (même si cancelled)
-            $customer->decrement('total_appointments');
-
-            // ✅ Mais soustraire les dépenses uniquement si non cancelled
-            if ($appointment->status !== 'cancelled' && $appointment->amount_paid > 0) {
-                $customer->decrement('total_spent', $appointment->amount_paid);
-            }
-        });
-    }
-
-    // ========================================
-    // Accesseurs
-    // ========================================
 
     /**
-     * Date et heure de début combinées (timestamp Unix)
+     * Total payé (somme de tous les paiements)
      */
-    public function getDatetimeAttribute(): int
+    public function getTotalPaidAttribute(): int
     {
-        return Carbon::parse($this->date->format('Y-m-d') . ' ' . $this->start_time)->timestamp;
+        return $this->payments()->sum('amount');
+    }
+
+    /**
+     * Montant des acomptes
+     */
+    public function getDepositAmountAttribute(): int
+    {
+        return $this->payments()->deposits()->sum('amount');
+    }
+
+    /**
+     * Montant des paiements non-acomptes
+     */
+    public function getNonDepositAmountAttribute(): int
+    {
+        return $this->payments()->nonDeposits()->sum('amount');
+    }
+
+
+    /**
+     * Vérifier si un acompte a été payé
+     */
+    public function getDepositPaidAttribute(): bool
+    {
+        return $this->payments()->deposits()->exists();
+    }
+
+
+    /**
+     * Reste à payer
+     */
+    public function getRemainingAmountAttribute(): int
+    {
+        return max(0, $this->total - $this->total_paid);
+    }
+
+    /**
+     * Statut de paiement (calculé automatiquement)
+     */
+    public function getPaymentStatusAttribute(): string
+    {
+        $totalPaid = $this->total_paid;
+
+        if ($totalPaid === 0) {
+            return 'pending';
+        } elseif ($totalPaid >= $this->total) {
+            return 'paid';
+        } else {
+            return 'partial';
+        }
+    }
+
+    /**
+     * Vérifier si entièrement payé
+     */
+    public function getIsFullyPaidAttribute(): bool
+    {
+        return $this->total_paid >= $this->total;
     }
 
     /**
@@ -207,17 +171,9 @@ class Appointment extends Model
     /**
      * Prix en euros
      */
-    public function getPriceEurosAttribute(): float
+    public function getTotalEurosAttribute(): float
     {
-        return $this->price / 100;
-    }
-
-    /**
-     * Montant payé en euros
-     */
-    public function getAmountPaidEurosAttribute(): float
-    {
-        return $this->amount_paid / 100;
+        return $this->total / 100;
     }
 
     /**
@@ -306,6 +262,14 @@ class Appointment extends Model
     }
 
     /**
+     * Rendez-vous non annulés
+     */
+    public function scopeNoCancelled($query)
+    {
+        return $query->where('status', '!=', 'cancelled');
+    }
+
+    /**
      * Rendez-vous à venir
      */
     public function scopeUpcoming($query)
@@ -376,6 +340,24 @@ class Appointment extends Model
     // ========================================
 
     /**
+     * Ajouter un paiement
+     */
+    public function addPayment(
+        int $paymentMethodId,
+        int $amount,
+        bool $isDeposit = false,
+        ?string $notes = null
+    ): AppointmentPayment {
+        return $this->payments()->create([
+            'payment_method_id' => $paymentMethodId,
+            'amount' => $amount,
+            'is_deposit' => $isDeposit, // ✅
+            'notes' => $notes,
+            'paid_at' => now(),
+        ]);
+    }
+
+    /**
      * Confirmer le rendez-vous
      */
     public function confirm(): self
@@ -424,20 +406,6 @@ class Appointment extends Model
         return $this;
     }
 
-    /**
-     * Marquer comme payé
-     */
-    public function markAsPaid(string $method = null, int $amount = null): self
-    {
-        $this->update([
-            'payment_status' => 'paid',
-            'payment_method' => $method,
-            'amount_paid' => $amount ?? $this->price,
-            'paid_at' => now(),
-        ]);
-
-        return $this;
-    }
 
     /**
      * Envoyer un rappel
@@ -450,7 +418,6 @@ class Appointment extends Model
         ]);
 
         // TODO: Envoyer notification/email
-
         return $this;
     }
 
@@ -483,5 +450,74 @@ class Appointment extends Model
         return !$query->exists();
     }
 
+    // ========================================
+    // ÉVÉNEMENTS (STATS CUSTOMER)
+    // ========================================
+
+    protected static function booted(): void
+    {
+        // CRÉATION
+        static::created(function (Appointment $appointment) {
+            $appointment->customer->increment('total_appointments');
+        });
+
+        // MISE À JOUR
+        static::updated(function (Appointment $appointment) {
+            $customer = $appointment->customer;
+
+            // Si le statut passe à "cancelled"
+            if ($appointment->isDirty('status') && $appointment->status === 'cancelled') {
+                $oldStatus = $appointment->getOriginal('status');
+
+                if ($oldStatus !== 'cancelled') {
+                    // Soustraire TOUS les paiements
+                    $totalPaid = $appointment->payments()->sum('amount');
+                    if ($totalPaid > 0) {
+                        $customer->decrement('total_spent', $totalPaid);
+                    }
+                }
+            }
+
+            // Si le statut passe de "cancelled" à un autre (réactivation).
+            if ($appointment->isDirty('status') && $appointment->status !== 'cancelled') {
+                $oldStatus = $appointment->getOriginal('status');
+
+                if ($oldStatus === 'cancelled') {
+                    // Ré-ajouter TOUS les paiements
+                    $totalPaid = $appointment->payments()->sum('amount');
+                    if ($totalPaid > 0) {
+                        $customer->increment('total_spent', $totalPaid);
+                    }
+                }
+            }
+
+            // Mettre à jour first_visit_at et last_visit_at
+            if ($appointment->status === 'completed' && $appointment->isDirty('status')) {
+                $visitDate = $appointment->completed_at ?? now();
+
+                if (!$customer->first_visit_at) {
+                    $customer->update(['first_visit_at' => $visitDate]);
+                }
+
+                $customer->update(['last_visit_at' => $visitDate]);
+            }
+        });
+
+        // SUPPRESSION
+        static::deleting(function (Appointment $appointment) {
+            $customer = $appointment->customer;
+
+            // Toujours décrémenter total_appointments
+            $customer->decrement('total_appointments');
+
+            // Soustraire les paiements uniquement si non cancelled
+            if ($appointment->status !== 'cancelled') {
+                $totalPaid = $appointment->payments()->sum('amount');
+                if ($totalPaid > 0) {
+                    $customer->decrement('total_spent', $totalPaid);
+                }
+            }
+        });
+    }
 
 }

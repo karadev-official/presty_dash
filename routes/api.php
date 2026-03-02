@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\v1\Pro\ServiceController;
 use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
 use App\Http\Controllers\Api\v1\Pro\WorkplaceController;
 use App\Http\Controllers\Api\v1\UploadController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Models\User;
 use Faker\Factory;
 use Illuminate\Http\Request;
@@ -155,6 +156,10 @@ Route::prefix('v1')->group(function () {
 
             Route::apiResource('appointments', AppointmentController::class);
             Route::put('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel']);
+        });
+
+        Route::prefix("payment-methods")->group(function () {
+            Route::get("/", [PaymentMethodController::class, 'index']);
         });
 
         Route::prefix('addresses')->group(function () {

@@ -18,8 +18,9 @@ class AppointmentServiceResource extends JsonResource
             'quantity' => $this->quantity,
             'total' => $this->total,
             'notes' => $this->notes,
+            'name' => $this->service->name,
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+//            'updated_at' => $this->updated_at,
 
             'appointment_id' => $this->appointment_id,
             'service_id' => $this->service_id,
