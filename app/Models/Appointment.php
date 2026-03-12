@@ -49,6 +49,10 @@ class Appointment extends Model
         ];
     }
 
+    /* ======================
+        Relations
+     =======================*/
+
     public function professionalProfile(): BelongsTo
     {
         return $this->belongsTo(ProfessionalProfile::class);
@@ -87,6 +91,11 @@ class Appointment extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(AppointmentPayment::class);
+    }
+
+    public function loyaltyTransactions(): HasMany
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
     }
 
     // ========================================

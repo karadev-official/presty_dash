@@ -22,13 +22,11 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'device_name' => 'required|string',
-            'register_role' => 'nullable|in:customer,pro',
-
-            'specialty' => ['required_if:register_role,pro', 'nullable', 'string', 'max:255'],
+            'name' => ['required', 'string'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'min:8'],
+            'device_name' => ['required', 'string'],
+            'register_role' => ['required', 'string', 'in:customer,pro'],
         ];
     }
 
@@ -38,13 +36,11 @@ class RegisterRequest extends FormRequest
             'name.required' => 'Le nom est requis.',
             'email.required' => 'L\'email est requis.',
             'email.email' => 'Vous devez entrer une adresse email valide.',
-            'email.unique' => 'Cet email est déjà utilisé.',
+            'email.unique' => 'une erreur est survenue lors de la création de compte.',
             'password.required' => 'Le mot de passe est requis.',
             'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
             'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
             'device_name.required' => 'Le nom de l\'appareil est requis.',
-
-            'specialty.required_if' => 'La spécialité est requise pour les professionnels.',
         ];
     }
 }

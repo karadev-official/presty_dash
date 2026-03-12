@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProfessionalProfile extends Model
@@ -20,6 +22,10 @@ class ProfessionalProfile extends Model
         'description',
     ];
 
+
+    /* ===========================
+       Relations
+    =========================== */
     public function pro(): BelongsTo
     {
         return $this->belongsTo(User::class, 'pro_user_id');
@@ -38,6 +44,33 @@ class ProfessionalProfile extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    public function loyaltyProgram(): HasOne
+    {
+        return $this->hasOne(LoyaltyProgram::class);
+    }
+
+    public function loyaltyCards(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            LoyaltyCard::class,
+            LoyaltyProgram::class
+        );
+    }
+
+    public function productCategories(): HasMany
+    {
+        return $this->hasMany(ProductCategory::class);
+    }
+
+    public function serviceCategories(): HasMany
+    {
+        return $this->hasMany(ServiceCategory::class);
+    }
+
+
+    /* ===========================
+       Accesseurs
+    =========================== */
     /**
      * Rendez-vous à venir
      */

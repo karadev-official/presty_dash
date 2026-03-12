@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Models\LoyaltyCard;
 use App\Traits\ApiResponder;
 use Illuminate\Http\Request;
 
@@ -21,8 +22,8 @@ class CustomerController extends Controller
     public function store(CustomerRequest $request)
     {
         $this->authorize('create', Customer::class);
-
-        return new CustomerResource(Customer::create($request->validated()));
+        $customer = Customer::create($request->validated());
+        return new CustomerResource($customer->fresh());
     }
 
     public function show(Customer $customer)

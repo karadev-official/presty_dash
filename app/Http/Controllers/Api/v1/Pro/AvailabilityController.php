@@ -18,10 +18,10 @@ class AvailabilityController extends Controller
 {
     public function show(Request $request)
     {
-        $uid = $request->user()->id;
+        $uid = $request->user()->professionalProfile->id;
 
         $availability = Availability::firstOrCreate(
-            ['user_id' => $uid],
+            ['professional_profile_id' => $uid],
             ['timezone' => 'Europe/Paris']
         );
 
@@ -50,7 +50,7 @@ class AvailabilityController extends Controller
 
     public function update(Request $request)
     {
-        $uid = $request->user()->id;
+        $uid = $request->user()->professionalProfile->id;
 
         $data = $request->validate([
             'timezone' => ['nullable', 'string', 'max:64'],
@@ -79,7 +79,7 @@ class AvailabilityController extends Controller
         ]);
 
         $availability = Availability::firstOrCreate(
-            ['user_id' => $uid],
+            ['professional_profile_id' => $uid],
             ['timezone' => 'Europe/Paris']
         );
 

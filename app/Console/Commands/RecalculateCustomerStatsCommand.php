@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class RecalculateCustomerStatsCommand extends Command
 {
     protected $signature = 'customers:recalculate-stats {--customer-id= : ID d\'un customer spécifique}';
-    protected $description = 'Recalculer les stats de tous les customers';
+    protected $description = 'Recalculer les stats de tous les customers (avec paiements)';
 
     public function handle(): int
     {
@@ -44,42 +44,43 @@ class RecalculateCustomerStatsCommand extends Command
 
     private function recalculateForCustomer(Customer $customer): void
     {
-        // ✅ TOUS les RDV (même cancelled) pour total_appointments
-        $allAppointments = $customer->appointments()->get();
-        $totalAppointments = $allAppointments->count();
+        // ✅ Compter TOUS les RDV (même cancelled)
+        $totalAppointments = DB::table('appointments')
+            ->where('customer_id', $customer->id)
+            ->whereNull('deleted_at')
+            ->count();
 
-        // ✅ Uniquement les RDV NON cancelled pour total_spent
-        $nonCancelledAppointments = $allAppointments->where('status', '!=', 'cancelled');
-        $totalSpent = $nonCancelledAppointments->sum('amount_paid');
+        // ✅ Calculer total_spent depuis les paiements (RDV NON cancelled uniquement)
+        $totalSpent = DB::table('appointment_payments')
+            ->join('appointments', 'appointment_payments.appointment_id', '=', 'appointments.id')
+            ->where('appointments.customer_id', $customer->id)
+            ->where('appointments.status', '!=', 'cancelled')
+            ->whereNull('appointments.deleted_at')
+            ->whereNull('appointment_payments.deleted_at')
+            ->sum('appointment_payments.amount');
 
-        // ✅ Première et dernière visite (RDV completed uniquement)
-        $completedAppointments = $allAppointments->where('status', 'completed');
+        // ✅ Première visite (RDV completed)
+        $firstVisit = DB::table('appointments')
+            ->where('customer_id', $customer->id)
+            ->where('status', 'completed')
+            ->whereNull('deleted_at')
+            ->orderBy(DB::raw('COALESCE(completed_at, CONCAT(date, " ", end_time))'))
+            ->value(DB::raw('COALESCE(completed_at, CONCAT(date, " ", end_time))'));
 
-        $firstVisit = null;
-        $lastVisit = null;
-
-        if ($completedAppointments->isNotEmpty()) {
-            $firstCompleted = $completedAppointments->sortBy(function ($apt) {
-                return $apt->completed_at ?? Carbon::parse($apt->date . ' ' . $apt->end_time);
-            })->first();
-
-            $lastCompleted = $completedAppointments->sortByDesc(function ($apt) {
-                return $apt->completed_at ?? Carbon::parse($apt->date . ' ' . $apt->end_time);
-            })->first();
-
-            $firstVisit = $firstCompleted->completed_at
-                ?? Carbon::parse($firstCompleted->date . ' ' . $firstCompleted->end_time);
-
-            $lastVisit = $lastCompleted->completed_at
-                ?? Carbon::parse($lastCompleted->date . ' ' . $lastCompleted->end_time);
-        }
+        // ✅ Dernière visite (RDV completed)
+        $lastVisit = DB::table('appointments')
+            ->where('customer_id', $customer->id)
+            ->where('status', 'completed')
+            ->whereNull('deleted_at')
+            ->orderByDesc(DB::raw('COALESCE(completed_at, CONCAT(date, " ", end_time))'))
+            ->value(DB::raw('COALESCE(completed_at, CONCAT(date, " ", end_time))'));
 
         // Mettre à jour
         $customer->update([
             'total_appointments' => $totalAppointments,
-            'total_spent' => $totalSpent,
-            'first_visit_at' => $firstVisit,
-            'last_visit_at' => $lastVisit,
+            'total_spent' => (int) $totalSpent,
+            'first_visit_at' => $firstVisit ? Carbon::parse($firstVisit) : null,
+            'last_visit_at' => $lastVisit ? Carbon::parse($lastVisit) : null,
         ]);
     }
 }

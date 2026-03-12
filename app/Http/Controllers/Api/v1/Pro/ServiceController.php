@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceRequest;
 use App\Http\Resources\ServiceResource;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\ServiceOption;
 use App\Models\ServiceOptionGroup;
 use Illuminate\Http\Request;
@@ -18,8 +19,10 @@ class ServiceController extends Controller
 
     public function index(Request $request)
     {
+        $professionalProfile = $request->user()->professionalProfile;
+        $categoriesIds = $professionalProfile->serviceCategories()->pluck('id')->toArray();
         $services = Service::with('category', 'optionGroups.options')
-            ->where('user_id', $request->user()->id)
+            ->whereIn('service_category_id', $categoriesIds)
             ->get();
         return response()->json([
             'services' => ServiceResource::collection($services),
@@ -28,9 +31,8 @@ class ServiceController extends Controller
 
     public function show(Request $request, Service $service)
     {
-        abort_unless($service->user_id === $request->user()->id, 404);
+        $this->authorize('view', $service->category);
         $service->load('category', 'optionGroups.options');
-
         return response()->json([
             'service' => new ServiceResource($service),
         ]);
@@ -38,36 +40,35 @@ class ServiceController extends Controller
 
     public function store(ServiceRequest $request)
     {
+        $this->authorize('create', ServiceCategory::class);
         $data = $request->validated();
         $service = new Service();
 
         DB::transaction(function () use (&$service, $request, $data) {
-            $service = Service::create([
-                'user_id' => $request->user()->id,
-                ...collect($data)->except(['option_groups'])->toArray(),
-            ]);
+            $professionalProfile = $request->user()->professionalProfile;
+            $service = Service::create($data);
 
             if (!array_key_exists('option_groups', $data)) {
                 return;
             }
 
-            $uid = $request->user()->id;
+            $uid = $professionalProfile->id;
             $groupsPayload = $data['option_groups'];
             $sync = [];
 
             foreach ($groupsPayload as $gi => $g) {
                 // 2) Create group (store = toujours create)
                 $group = ServiceOptionGroup::create([
-                    'user_id'        => $uid,
-                    'client_id'      => $g['client_id'] ?? null,
-                    'name'           => $g['name'],
-                    'slug'           => $g['slug'] ?? $g['name'],
-                    'selection_type' => $g['selection_type'],
-                    'is_required'    => (bool) $g['is_required'],
-                    'min_select'     => $g['min_select'] ?? 0,
-                    'max_select'     => $g['max_select'] ?? null,
-                    'position'       => $g['position'] ?? $gi,
-                    'is_active'      => true,
+                    'professional_profile_id'   => $uid,
+                    'client_id'                 => $g['client_id'] ?? null,
+                    'name'                      => $g['name'],
+                    'slug'                      => $g['slug'] ?? $g['name'],
+                    'selection_type'            => $g['selection_type'],
+                    'is_required'               => (bool) $g['is_required'],
+                    'min_select'                => $g['min_select'] ?? 0,
+                    'max_select'                => $g['max_select'] ?? null,
+                    'position'                  => $g['position'] ?? $gi,
+                    'is_active'                 => true,
                 ]);
 
                 // pivot
@@ -103,11 +104,11 @@ class ServiceController extends Controller
 
     public function update(ServiceRequest $request, Service $service)
     {
-        abort_unless($service->user_id === $request->user()->id, 404);
+        $this->authorize('update', $service->category);
         $data = $request->validated();
 
         DB::transaction(function () use ($service, $data, $request) {
-
+            $professionalProfile = $request->user()->professionalProfile;
             // 1) update service fields
             $serviceFields = collect($data)->except(['option_groups'])->toArray();
             if (!empty($serviceFields)) {
@@ -118,7 +119,7 @@ class ServiceController extends Controller
                 return;
             }
 
-            $uid = $request->user()->id;
+            $uid = $professionalProfile->id;
             $groupsPayload = $data['option_groups'] ?? [];
             $sync = [];
 
@@ -127,7 +128,7 @@ class ServiceController extends Controller
                 // ✅ GROUP: id != null => update ; id == null => create
                 if (!empty($g['id'])) {
                     $group = ServiceOptionGroup::where('id', $g['id'])
-                        ->where('user_id', $uid)
+                        ->where('professional_profile_id', $uid)
                         ->firstOrFail();
 
                     $group->update([
@@ -143,7 +144,7 @@ class ServiceController extends Controller
                     ]);
                 } else {
                     $group = ServiceOptionGroup::create([
-                        'user_id'        => $uid,
+                        'professional_profile_id'        => $uid,
                         'client_id'      => $g['client_id'],
                         'name'           => $g['name'],
                         'slug'           => $g['slug'] ?? $g['name'],
@@ -168,7 +169,7 @@ class ServiceController extends Controller
 
                     $opt = ServiceOption::updateOrCreate(
                         [
-                            'id' => $o['id'] ?? null,
+//                            'id' => $o['id'] ?? null,
                             'service_option_group_id' => $group->id,
                             'client_id' => $o['client_id'],
                         ],
@@ -211,7 +212,7 @@ class ServiceController extends Controller
 
     public function destroy(Request $request, Service $service)
     {
-        abort_unless($service->user_id === $request->user()->id, 404);
+        $this->authorize('delete', $service->category);
         $service->delete();
         return response()->json(['message' => 'Service supprimé avec succès.']);
     }

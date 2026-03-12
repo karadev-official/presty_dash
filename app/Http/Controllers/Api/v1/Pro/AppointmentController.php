@@ -32,44 +32,46 @@ class AppointmentController extends Controller
             $appointment->fill($data);
             $appointment->save();
 
-            if(!array_key_exists('products', $data)){
+            if(!array_key_exists('appointment_products', $data)){
                 return;
             }
-            $products = $data['products'];
-            foreach($products as $product){
+            $appointmentProducts = $data['appointment_products'];
+            foreach($appointmentProducts as $appointmentProduct){
                 AppointmentProduct::create([
                     'appointment_id' => $appointment->id,
-                    'product_id' => $product['product_id'],
-                    'price' => $product['price'],
-                    'quantity' => $product['quantity'],
-                    'total' => $product['total'],
-                    'notes' => $product['notes'],
+                    'product_id' => $appointmentProduct['product_id'],
+                    'price' => $appointmentProduct['price'],
+                    'name' => $appointmentProduct['name'],
+                    'quantity' => $appointmentProduct['quantity'],
+                    'total' => $appointmentProduct['total'],
+                    'notes' => $appointmentProduct['notes'],
                 ]);
             }
 
-            if(array_key_exists('services', $data)){
-                $services = $data['services'];
-                foreach($services as $service){
+            if(array_key_exists('appointment_services', $data)){
+                $appointmentServices = $data['appointment_services'];
+                foreach($appointmentServices as $appointmentService){
                     $newService = AppointmentService::create([
                         'appointment_id' => $appointment->id,
-                        'service_id' => $service['service_id'],
-                        'price' => $service['price'],
-                        'duration' => $service['duration'],
-                        'quantity' => $service['quantity'],
-                        'total' => $service['total'],
-                        'notes' => $service['notes'],
+                        'service_id' => $appointmentService['service_id'],
+                        'price' => $appointmentService['price'],
+                        'name' => $appointmentService['name'],
+                        'duration' => $appointmentService['duration'],
+                        'quantity' => $appointmentService['quantity'],
+                        'total' => $appointmentService['total'],
+                        'notes' => $appointmentService['notes'],
                     ]);
 
-                    $options = $service['options'];
-                    foreach($options as $option){
+                    $appointmentServiceOptions = $appointmentService['options'];
+                    foreach($appointmentServiceOptions as $appointmentServiceOption){
                         AppointmentServiceOption::create([
                             'appointment_service_id' => $newService->id,
-                            'service_option_id' => $option['service_option_id'],
-                            'service_option_group_id' => $option['service_option_group_id'],
-                            'option_name' => $option['option_name'],
-                            'group_name' => $option['group_name'],
-                            'price' => $option['price'],
-                            'duration' => $option['duration'],
+                            'service_option_id' => $appointmentServiceOption['service_option_id'],
+                            'service_option_group_id' => $appointmentServiceOption['service_option_group_id'],
+                            'option_name' => $appointmentServiceOption['option_name'],
+                            'group_name' => $appointmentServiceOption['group_name'],
+                            'price' => $appointmentServiceOption['price'],
+                            'duration' => $appointmentServiceOption['duration'],
                         ]);
                     }
                 }
@@ -95,29 +97,30 @@ class AppointmentController extends Controller
             $appointment->update($data);
 
             // ✅ Supprimer les anciens services et leurs options
-            if (isset($data['services'])) {
+            if (isset($data['appointment_services'])) {
                 // Supprimer les options des anciens services
-                foreach ($appointment->services as $oldService) {
+                foreach ($appointment->services as $oldService) { // ✅ Changé de services à appointment_services
                     $oldService->options()->delete();
                 }
                 // Supprimer les anciens services
-                $appointment->services()->delete();
+                $appointment->services()->delete(); // ✅ Changé de services() à appointment_services()
 
                 // ✅ Créer les nouveaux services
-                foreach ($data['services'] as $service) {
+                foreach ($data['appointment_services'] as $appointmentService) {
                     $newService = AppointmentService::create([
                         'appointment_id' => $appointment->id,
-                        'service_id' => $service['service_id'],
-                        'price' => $service['price'],
-                        'duration' => $service['duration'],
-                        'quantity' => $service['quantity'],
-                        'total' => $service['total'],
-                        'notes' => $service['notes'] ?? null,
+                        'service_id' => $appointmentService['service_id'],
+                        'price' => $appointmentService['price'],
+                        'name' => $appointmentService['name'],
+                        'duration' => $appointmentService['duration'],
+                        'quantity' => $appointmentService['quantity'],
+                        'total' => $appointmentService['total'],
+                        'notes' => $appointmentService['notes'] ?? null,
                     ]);
 
                     // ✅ Créer les options du service
-                    if (isset($service['options']) && is_array($service['options'])) {
-                        foreach ($service['options'] as $option) {
+                    if (isset($appointmentService['options']) && is_array($appointmentService['options'])) {
+                        foreach ($appointmentService['options'] as $option) {
                             AppointmentServiceOption::create([
                                 'appointment_service_id' => $newService->id,
                                 'service_option_id' => $option['service_option_id'],
@@ -133,22 +136,25 @@ class AppointmentController extends Controller
             }
 
             // ✅ Supprimer les anciens produits et créer les nouveaux
-            if (isset($data['products'])) {
+            if (isset($data['appointment_products'])) {
                 // Supprimer les anciens produits
-                $appointment->products()->delete();
+                $appointment->products()->delete(); // ✅ Changé de products() à appointment_products()
 
                 // ✅ Créer les nouveaux produits
-                foreach ($data['products'] as $product) {
+                foreach ($data['appointment_products'] as $appointmentProduct) {
                     AppointmentProduct::create([
                         'appointment_id' => $appointment->id,
-                        'product_id' => $product['product_id'],
-                        'price' => $product['price'],
-                        'quantity' => $product['quantity'],
-                        'total' => $product['total'],
-                        'notes' => $product['notes'] ?? null,
+                        'product_id' => $appointmentProduct['product_id'],
+                        'price' => $appointmentProduct['price'],
+                        'name' => $appointmentProduct['name'],
+                        'quantity' => $appointmentProduct['quantity'],
+                        'total' => $appointmentProduct['total'],
+                        'notes' => $appointmentProduct['notes'] ?? null,
                     ]);
                 }
             }
+
+            // ✅ Gérer les paiements
             if (isset($data['payments'])) {
                 $incomingPaymentIds = collect($data['payments'])
                     ->pluck('id')
@@ -192,12 +198,12 @@ class AppointmentController extends Controller
         // Recharger les relations pour le retour
         $appointment->load([
             'customer',
-            'services.service',
             'services.options',
-            'products.product',
+            'products',
             'payments.paymentMethod',
             'workplace.address'
         ]);
+
         return new AppointmentResource($appointment);
     }
 

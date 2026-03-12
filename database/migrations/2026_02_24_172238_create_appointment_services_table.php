@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->foreignId('appointment_id')->constrained('appointments');
             $table->foreignId('service_id')->constrained('services');
             $table->unsignedBigInteger('price');
+            $table->string('name');
             $table->integer('duration');
             $table->integer('quantity')->default(1)->comment('Quantité');
             $table->unsignedBigInteger('total')->comment('Prix total (price * quantity) en centimes');

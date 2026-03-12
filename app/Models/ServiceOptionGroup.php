@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ class ServiceOptionGroup extends Model
     protected $table = 'service_option_groups';
 
     protected $fillable = [
-        'user_id',
+        'professional_profile_id',
         'client_id',
         'name',
         'slug',
@@ -32,9 +33,9 @@ class ServiceOptionGroup extends Model
         'is_online' => 'boolean',
     ];
 
-    public function user()
+    public function professionalProfile() : BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(ProfessionalProfile::class);
     }
 
     public function options()

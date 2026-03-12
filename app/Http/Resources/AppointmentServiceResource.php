@@ -14,19 +14,20 @@ class AppointmentServiceResource extends JsonResource
         return [
             'id' => $this->id,
             'price' => $this->price,
+            'name' => $this->name,
             'duration' => $this->duration,
             'quantity' => $this->quantity,
             'total' => $this->total,
             'notes' => $this->notes,
-            'name' => $this->service->name,
             'created_at' => $this->created_at,
 //            'updated_at' => $this->updated_at,
 
             'appointment_id' => $this->appointment_id,
             'service_id' => $this->service_id,
+            'options' => AppointmentServiceOptionResource::collection($this->options)
+
 
 //            'appointment' => new AppointmentResource($this->whenLoaded('appointment')),
-//            'service' => new ServiceResource($this->whenLoaded('service')),
         ];
     }
 }

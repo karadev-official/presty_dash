@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('professional_profiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pro_user_id')->constrained('users');
+            $table->foreignId('pro_user_id')->constrained('users')->cascadeOnDelete();
             $table->string('specialty')->nullable();
             $table->string('company_name')->nullable();
             $table->string('siret', 30)->nullable();

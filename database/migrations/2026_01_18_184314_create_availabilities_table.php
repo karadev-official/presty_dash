@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('availabilities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
+            $table->foreignId('professional_profile_id')->unique()->constrained()->cascadeOnDelete();
             $table->string('timezone', 64)->default('Europe/Paris');
             $table->timestamps();
         });

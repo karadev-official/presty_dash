@@ -13,9 +13,7 @@ return new class extends Migration
     {
         Schema::create('services', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // pro owner
-            $table->foreignId('service_category_id')->nullable()->constrained('service_categories')->nullOnDelete();
+            $table->foreignId('service_category_id')->constrained('service_categories')->cascadeOnDelete();
 
             $table->string('name');
             $table->string('slug');
@@ -29,9 +27,7 @@ return new class extends Migration
             $table->boolean('is_online')->default(false);
             $table->timestamps();
 
-
-
-            $table->index(['user_id', 'is_active', 'is_online', 'position']);
+            $table->index(['is_active', 'is_online', 'position']);
         });
     }
 

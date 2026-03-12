@@ -15,13 +15,17 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::firstOrCreate(
-            ['email' => 'admin@email.com'],
+        $this->call([
+            RolesSeeder::class,
+        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'karamoko@presty.app'],
             [
-                'name' => 'Admin User',
-                'password' => bcrypt('123456'),
+                'name' => 'Karamoko',
+                'password' => bcrypt('Karamoko'),
                 'email_verified_at' => now(),
             ]
         );
+        $user->assignRole('pro', 'super-admin');
     }
 }

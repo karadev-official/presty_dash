@@ -6,21 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductCategoryRequest;
 use App\Http\Resources\ProductCategoryResource;
 use App\Models\ProductCategory;
+use App\Models\ProfessionalProfile;
 use Illuminate\Http\Request;
 
 class ProductCategoryController extends Controller
 {
     public function index(Request $request)
     {
-        return ProductCategoryResource::collection(ProductCategory::where("user_id", $request->user()->id)->get());
+        $professionalProfile = $request->user()->professionalProfile;
+        return ProductCategoryResource::collection(ProductCategory::where("professional_profile_id", $professionalProfile->id)->get());
     }
 
     public function store(ProductCategoryRequest $request)
     {
+        $this->authorize('create', ProductCategory::class);
         $data = $request->validated();
         return new ProductCategoryResource(ProductCategory::create(
             [
-                'user_id' => $request->user()->id,
+                'professional_profile_id' => $request->user()->professionalProfile->id,
                 ...$data
             ])
         );
@@ -28,20 +31,20 @@ class ProductCategoryController extends Controller
 
     public function show(Request $request, ProductCategory $category)
     {
-        abort_unless($category->user_id === $request->user()->id, 404);
+        $this->authorize('view', $category);
         return new ProductCategoryResource($category);
     }
 
     public function update(ProductCategoryRequest $request, ProductCategory $category)
     {
-        abort_unless($category->user_id === $request->user()->id, 404);
+        $this->authorize('update', $category);
         $category->update($request->validated());
         return new ProductCategoryResource($category);
     }
 
     public function destroy(Request $request, ProductCategory $category)
     {
-        abort_unless($category->user_id === $request->user()->id, 404);
+        $this->authorize('delete', $category);
         $category->delete();
         return response()->json([], 204);
     }

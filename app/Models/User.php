@@ -26,7 +26,6 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'specialty',
         'avatar_image_id',
         'email',
         'password',
@@ -89,7 +88,7 @@ class User extends Authenticatable
         return $this->belongsTo(Image::class, 'avatar_image_id');
     }
 
-    public function ProfessionalProfile(): HasOne
+    public function professionalProfile(): HasOne
     {
         return $this->hasOne(ProfessionalProfile::class, 'pro_user_id');
     }
@@ -99,7 +98,7 @@ class User extends Authenticatable
         return $this->avatarImage?->url;
     }
 
-    public function Address(): BelongsTo
+    public function address(): BelongsTo
     {
         return $this->belongsTo(Address::class, 'address_id');
     }

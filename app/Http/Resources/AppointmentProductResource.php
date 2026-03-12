@@ -14,17 +14,15 @@ class AppointmentProductResource extends JsonResource
         return [
             'id' => $this->id,
             'price' => $this->price,
+            'name' => $this->name,
             'quantity' => $this->quantity,
             'total' => $this->total,
             'notes' => $this->notes,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-
             'appointment_id' => $this->appointment_id,
             'product_id' => $this->product_id,
 
-            'appointment' => new AppointmentResource($this->whenLoaded('appointment')),
-            'product' => new ProductResource($this->whenLoaded('product')),
+//            'appointment' => new AppointmentResource($this->whenLoaded('appointment')),
+//            'product' => new ProductResource($this->product),
         ];
     }
 }

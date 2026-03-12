@@ -14,7 +14,7 @@ class ProductCategory extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'user_id',
+        'professional_profile_id',
         'name',
         'slug',
         'position',
@@ -32,7 +32,7 @@ class ProductCategory extends Model
     {
         static::creating(function ($category) {
             if (is_null($category->position)) {
-                $maxPosition = self::where('user_id', $category->user_id)->max('position');
+                $maxPosition = self::where('professional_profile_id', $category->professional_profile_id)->max('position');
                 $category->position = is_null($maxPosition) ? 0 : $maxPosition + 1;
             }
         });
@@ -50,9 +50,9 @@ class ProductCategory extends Model
         $this->attributes['slug'] = $slug;
     }
 
-    public function user() : BelongsTo
+    public function professionalProfile() : BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(ProfessionalProfile::class);
     }
 
     public function products() : HasMany

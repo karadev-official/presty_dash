@@ -16,6 +16,7 @@ class AppointmentService extends Model
         'appointment_id',
         'service_id',
         'price',
+        'name',
         'duration',
         'quantity',
         'total',

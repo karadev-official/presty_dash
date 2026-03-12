@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\v1\Pro\ServiceController;
 use App\Http\Controllers\Api\v1\Pro\ServiceOptionGroupAttachController;
 use App\Http\Controllers\Api\v1\Pro\WorkplaceController;
 use App\Http\Controllers\Api\v1\UploadController;
+use App\Http\Controllers\LoyaltyCardController;
+use App\Http\Controllers\LoyaltyProgramController;
+use App\Http\Controllers\LoyaltyRewardController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Models\User;
 use Faker\Factory;
@@ -156,6 +159,24 @@ Route::prefix('v1')->group(function () {
 
             Route::apiResource('appointments', AppointmentController::class);
             Route::put('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel']);
+
+
+            // Programme
+            Route::get('/loyalty/program', [LoyaltyProgramController::class, 'show']);
+            Route::post('/loyalty/program', [LoyaltyProgramController::class, 'store']);
+            Route::put('/loyalty/program', [LoyaltyProgramController::class, 'update']);
+            Route::post("/loyalty/program/toggle-active", [LoyaltyProgramController::class, 'toggleActive']);
+
+            // Récompenses
+            Route::get('/loyalty/rewards', [LoyaltyRewardController::class, 'index']);
+            Route::post('/loyalty/rewards', [LoyaltyRewardController::class, 'store']);
+            Route::put('/loyalty/rewards/{loyaltyReward}', [LoyaltyRewardController::class, 'update']);
+            Route::delete('/loyalty/rewards/{loyaltyReward}', [LoyaltyRewardController::class, 'destroy']);
+
+            // Cartes
+            Route::get('/loyalty/cards', [LoyaltyCardController::class, 'index']);
+            Route::get('/loyalty/cards/customer/{customer}', [LoyaltyCardController::class, 'show']);
+            Route::put('/loyalty/cards/{loyaltyCard}', [LoyaltyCardController::class, 'update']);
         });
 
         Route::prefix("payment-methods")->group(function () {

@@ -25,12 +25,13 @@ class CustomerResource extends JsonResource
             'last_visit_at' => $this->last_visit_at,
             'total_appointments' => $this->total_appointments,
             'total_spent' => $this->total_spent,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+//            'created_at' => $this->created_at,
+//            'updated_at' => $this->updated_at,
             'initials' => $this->initials,
             'professional_profile_id' => $this->professional_profile_id,
             'user_id' => $this->user_id,
             'avatar' => $this->avatar,
+            'loyalty_card' => new LoyaltyCardResource($this->loyaltyCard),
             'appointments' => AppointmentResource::collection($this->appointments)
         ];
     }

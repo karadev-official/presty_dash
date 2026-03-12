@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AvailabilityOverrideRange extends Model
 {
-    use HasFactory;
+//    use HasFactory;
 
     protected $table = 'availability_override_ranges';
 

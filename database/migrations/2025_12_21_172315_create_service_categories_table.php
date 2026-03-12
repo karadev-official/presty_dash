@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('service_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // ✅ pro owner
+            $table->foreignId('professional_profile_id')->constrained()->cascadeOnDelete(); // ✅ pro owner
             $table->string('name');
             $table->string('slug');
             $table->boolean('is_active')->default(true);
@@ -23,8 +23,8 @@ return new class extends Migration
             $table->timestamps();
 
             // ✅ slug unique par pro (pas global)
-            $table->unique(['user_id', 'slug']);
-            $table->index(['user_id', 'is_active', 'is_online', 'position']);
+            $table->unique(['professional_profile_id', 'slug']);
+            $table->index(['professional_profile_id', 'is_active', 'is_online', 'position'], "professional_cards_index");
         });
     }
 

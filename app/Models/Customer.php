@@ -32,6 +32,24 @@ class Customer extends Model
         'total_spent',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'tags' => 'array',
+            'preferences' => 'array',
+            'is_favorite' => 'boolean',
+            'is_blocked' => 'boolean',
+            'first_visit_at' => 'datetime',
+            'last_visit_at' => 'datetime',
+            'total_appointments' => 'integer',
+            'total_spent' => 'integer',
+        ];
+    }
+
+    /* ===========================
+           Relations
+    =========================== */
+
     public function professionalProfile(): BelongsTo
     {
         return $this->belongsTo(ProfessionalProfile::class);
@@ -47,18 +65,24 @@ class Customer extends Model
         return $this->hasMany(Appointment::class);
     }
 
-    protected function casts(): array
+    public function loyaltyCard(): HasOne
     {
-        return [
-            'tags' => 'array',
-            'preferences' => 'array',
-            'is_favorite' => 'boolean',
-            'is_blocked' => 'boolean',
-            'first_visit_at' => 'datetime',
-            'last_visit_at' => 'datetime',
-            'total_appointments' => 'integer',
-            'total_spent' => 'integer',
-        ];
+        return $this->hasOne(LoyaltyCard::class);
+    }
+
+    /* ===========================
+           Accesseurs
+    =========================== */
+
+//    /**
+//     * Obtenir la carte de fidélité active pour un programme
+//     */
+    public function getLoyaltyCardForProgram(int $programId): ?object
+    {
+        return $this->loyaltyCards()
+            ->where('loyalty_program_id', $programId)
+            ->where('is_active', true)
+            ->first();
     }
 
     public function getFullNameAttribute(): string
@@ -73,7 +97,7 @@ class Customer extends Model
 
     public function getEmailAttribute(): ?string
     {
-        return $this->custom_email ?? $this->user->email;
+        return $this->custom_email ?? $this->user->email ?? null;
     }
 
     public function avatarImage(): BelongsTo

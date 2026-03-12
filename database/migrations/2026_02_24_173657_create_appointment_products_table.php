@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->foreignId('appointment_id')->constrained('appointments');
             $table->foreignId('product_id')->constrained('products');
             $table->integer('price');
+            $table->string('name');
             $table->integer('quantity')->default(1);
             $table->unsignedBigInteger('total');
             $table->text('notes')->nullable();

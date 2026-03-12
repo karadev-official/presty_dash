@@ -37,8 +37,8 @@ class AppointmentResource extends JsonResource
             'resource_id' => $this->resource_id,
             'cancelled_by' => $this->cancelled_by,
 
-            'services' => $this->services,
-            'products' => $this->products,
+            'appointment_services' => AppointmentServiceResource::collection($this->services),
+            'appointment_products' => AppointmentProductResource::collection($this->products),
 
             'customer' => [
                 'id' => $this->customer->id,

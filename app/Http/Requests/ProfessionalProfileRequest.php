@@ -9,11 +9,11 @@ class ProfessionalProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pro_user_id' => ['required', 'exists:users'],
-            'specialty' => ['nullable'],
-            'company_name' => ['nullable'],
-            'siret' => ['nullable'],
-            'description' => ['nullable'],
+            'pro_user_id' => ['required', 'exists:users,id'],
+            'specialty' => ['sometimes','nullable'],
+            'company_name' => ['sometimes','nullable'],
+            'siret' => ['sometimes','nullable'],
+            'description' => ['sometimes','nullable'],
         ];
     }
 

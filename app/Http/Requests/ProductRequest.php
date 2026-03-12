@@ -8,32 +8,23 @@ class ProductRequest extends FormRequest
 {
     public function rules(): array
     {
-        if(request()->isMethod("POST")) {
-            return [
-                'name' => ['required'],
-                'slug' => ['required'],
-                'description' => ['required'],
-                'product_category_id' => ['required', 'exists:product_categories,id'],
-                'position' => ['sometimes','required', 'integer'],
-                'price' => ['required', 'integer'],
-                'quantity' => ['nullable'],
-                'is_active' => ['boolean'],
-                'is_online' => ['boolean'],
-                'image_ids' => ['sometimes', 'array'],
-            ];
-        }
         return [
-            'name' => ['sometimes','required'],
-            'slug' => ['sometimes', 'required'],
-            'description' => ['sometimes', 'required'],
-            'position' => ['sometimes', 'required', 'integer'],
-            'price' => ['sometimes', 'required', 'integer'],
-            'quantity' => ['sometimes', 'nullable'],
+            'name' => [$this->requiredIfPost(), 'string'],
+            'slug' => [$this->requiredIfPost(), 'string'],
+            'description' => ['sometimes', 'nullable', 'string'],
+            'product_category_id' => [$this->requiredIfPost(), 'exists:product_categories,id'],
+            'position' => ['sometimes', 'integer'],
+            'price' => [$this->requiredIfPost(), 'numeric', 'min:0'],
+            'quantity' => [$this->requiredIfPost(), 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'is_online' => ['sometimes', 'boolean'],
-            'image_ids' => ['sometimes', 'array'],
+            'image_ids' => ['nullable', 'array'],
         ];
+    }
 
+    protected function requiredIfPost(): string
+    {
+        return $this->isMethod('POST') ? 'required' : 'sometimes';
     }
 
     public function authorize(): bool

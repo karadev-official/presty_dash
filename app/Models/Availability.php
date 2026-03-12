@@ -3,33 +3,32 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Availability extends Model
 {
-    use HasFactory;
-
+//    use HasFactory;
     protected $fillable = [
-        'user_id',
+        'professional_profile_id',
         'timezone',
     ];
 
-    protected $casts = [
-        'user_id' => 'integer',
-    ];
+//    protected $casts = [
+//        'professional_profile_id' => 'integer',
+//    ];
 
-    public function user() : BelongsTo
+    public function professionalProfile() : BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(ProfessionalProfile::class);
     }
 
-    public function weekDays()
+    public function weekDays(): HasMany
     {
         return $this->hasMany(AvailabilityWeekDay::class);
     }
 
-    public function dateOverrides()
+    public function dateOverrides(): HasMany
     {
         return $this->hasMany(AvailabilityDateOverride::class);
     }

@@ -14,13 +14,13 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'specialty' => $this->specialty,
             'avatar_url' => $this->avatar_url,
             'email' => $this->email,
-            'role' => $this->roles->first()?->name ?? null,
+            'role' => $this->hasRole('pro') ? "pro" : "customer",
             'initials' => $this->initials(),
             'created_at' => $this->created_at?->toISOString(),
-            'professional_profile' => new ProfessionalProfileResource($this->ProfessionalProfile)
+            'address_id' => $this->address_id,
+            'professional_profile' => new ProfessionalProfileResource($this->professionalProfile)
         ];
     }
 }

@@ -10,20 +10,9 @@ use Illuminate\Http\Request;
 class ServiceCategoryController extends Controller
 {
 
-    private function getLastPosition(Request $request)
-    {
-        $lastPosition = ServiceCategory::where("user_id", $request->user()->id)
-            ->max('position');
-        return response()->json(
-            [
-                'last_position' => $lastPosition ?? 0
-            ]
-        );
-    }
-
     public function index(Request $request)
     {
-        $categories = ServiceCategory::with('services')->where("user_id", $request->user()->id)
+        $categories = ServiceCategory::with('services')->where("professional_profile_id", $request->user()->professionalProfile->id)
             ->orderBy('position')
             ->get();
         $categories = $categories->map(function ($category) {
@@ -38,7 +27,7 @@ class ServiceCategoryController extends Controller
 
     public function show(Request $request, ServiceCategory $category)
     {
-        abort_unless($category->user_id === $request->user()->id, 404);
+        $this->authorize('view', $category);
         $category->load('services.optionGroups.options');
         return response()->json(
             [
@@ -49,10 +38,10 @@ class ServiceCategoryController extends Controller
 
     public function store(ServiceCategoryRequest $request)
     {
+        $this->authorize('create', ServiceCategory::class);
         $data = $request->validated();
-
         $category = ServiceCategory::create([
-            'user_id' => $request->user()->id,
+            'professional_profile_id' => $request->user()->professionalProfile->id,
             ...$data,
         ]);
 
@@ -66,8 +55,7 @@ class ServiceCategoryController extends Controller
 
     public function update(Request $request, ServiceCategory $category)
     {
-        abort_unless($category->user_id === $request->user()->id, 404);
-
+        $this->authorize('update', $category);
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'string', 'max:255'],
@@ -88,8 +76,7 @@ class ServiceCategoryController extends Controller
 
     public function destroy(Request $request, ServiceCategory $category)
     {
-        abort_unless($category->user_id === $request->user()->id, 404);
-
+        $this->authorize('delete', $category);
         $category->delete();
 
         return response()->json(

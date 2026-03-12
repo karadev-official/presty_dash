@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Resources\UserResource;
-use App\Models\ProfessionalProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -18,14 +17,14 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $request->validated();
-
+//        return response()->json(['data' => $request->all()], 201);
         $data = $request->validated();
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+
 
         $authorizeRole = ['customer', 'pro'];
 
@@ -38,18 +37,19 @@ class AuthController extends Controller
         $user->assignRole($data['register_role']);
 
         // ✅ Si c’est un pro : créer la ressource self tout de suite
-        if ($data['register_role'] === 'pro' && !$user->defaultResource()->exists()) {
+        if ($data['register_role'] === 'pro') {
             $user->ProfessionalProfile()->create([
                 'specialty' => $data['specialty'] ?? null
             ]);
-
-            $user->resources()->create([
-                'name' => $user->name ?? 'Moi',
-                'specialty' => $user->specialty,   // ✅ reprend la specialty du pro
-                'type' => Resource::TYPE_SELF,
-                'is_default' => true,
-                'is_active' => true,
-            ]);
+            if(!$user->defaultResource()->exists()){
+                $user->resources()->create([
+                    'name' => $user->name ?? 'Moi',
+                    'specialty' => '',
+                    'type' => Resource::TYPE_SELF,
+                    'is_default' => true,
+                    'is_active' => true,
+                ]);
+            }
         }
 
         $token = $user->createToken($data['device_name'])->plainTextToken;
@@ -62,24 +62,23 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
-        $request->validated();
-        $credentials = $request->only('email', 'password', 'login_role', 'device_name');
+        $data = $request->validated();
 
-        $user = User::where('email', $credentials['email'])->first();
+        $user = User::where('email', $data['email'])->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (!$user || !Hash::check($data['password'], $user->password)) {
             return response()->json([
                 'message' => 'Les informations de connexion sont invalides.'
             ], 401);
         }
 
-        if (isset($credentials['login_role']) && !$user->hasRole($credentials['login_role'])) {
+        if (isset($data['login_role']) && !$user->hasRole($data['login_role'])) {
             return response()->json([
                 'message' => 'Vous tentez de vous connecter dans le mauvais espace (client/professionnel).'
             ], 403);
         }
 
-        $token = $user->createToken($credentials['device_name'])->plainTextToken;
+        $token = $user->createToken($data['device_name'])->plainTextToken;
 
         return response()->json([
             'user' => new UserResource($user),
@@ -92,18 +91,22 @@ class AuthController extends Controller
         $user = $request->user();
         if ($user->hasRole('pro')) {
             $self = $user->defaultResource()->first();
-
             if (!$self) {
                 $user->resources()->create([
                     'name' => $user->name ?? 'Moi',
-                    'specialty' => $user->specialty,
                     'type' => Resource::TYPE_SELF,
                     'is_default' => true,
                     'is_active' => true,
                 ]);
             }
+            $professionalProfile = $user->professionalProfile;
+            if(!$professionalProfile){
+                $user->ProfessionalProfile()->create([
+                    'specialty' => $user->specialty ?? null
+                ]);
+            }
         }
-        return response()->json(new UserResource($user));
+        return response()->json(new UserResource($user->fresh()));
     }
 
     public function logout(Request $request)

@@ -13,7 +13,6 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
         'product_category_id',
         'name',
         'slug',
@@ -24,11 +23,6 @@ class Product extends Model
         'is_active',
         'is_online',
     ];
-
-    public function user() : BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
     public function category() : BelongsTo
     {

@@ -12,35 +12,36 @@ class ProductCategoryPolicy
 
     public function viewAny(User $user): bool
     {
-        return true;
+//        return true;
     }
 
     public function view(User $user, ProductCategory $category): bool
     {
-        return $category->user_id === $user->id;
+        return $user->professionalProfile->id === $category->professional_profile_id;
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasRole(['pro']) && $user->professionalProfile()->exists();
     }
 
     public function update(User $user, ProductCategory $category): bool
     {
-        return $category->user_id === $user->id;
+        return $user->professionalProfile->id === $category->professional_profile_id;
     }
 
     public function delete(User $user, ProductCategory $category): bool
     {
-        return $category->user_id === $user->id;
+        return $user->professionalProfile->id === $category->professional_profile_id;
     }
 
     public function restore(User $user, ProductCategory $category): bool
     {
-        //
+        return $user->professionalProfile->id === $category->professional_profile_id;
     }
 
     public function forceDelete(User $user, ProductCategory $category): bool
     {
+        return $user->professionalProfile->id === $category->professional_profile_id;
     }
 }

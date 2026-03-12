@@ -11,9 +11,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('slug');
-            $table->text('description')->default("")->nullable();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('product_category_id');
+            $table->text('description')->nullable();
+            $table->foreignId('product_category_id')->constrained()->cascadeOnDelete();
             $table->integer('position')->default(0);
             $table->integer('price')->default(0);
             $table->integer('quantity')->default(0);
@@ -21,10 +20,9 @@ return new class extends Migration {
             $table->boolean('is_online')->default(true);
             $table->timestamps();
             $table->softDeletes();
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('product_category_id')->references('id')->on('product_categories');
-            $table->index(['user_id', 'position']);
-            $table->index(['user_id', 'is_active', 'is_online'], 'user_ao_index');
+
+            $table->index(['position']);
+            $table->index(['is_active', 'is_online'], 'user_ao_index');
         });
     }
 

@@ -15,6 +15,7 @@ class AppointmentProduct extends Model
         'appointment_id',
         'product_id',
         'price',
+        'name',
         'quantity',
         'total',
         'notes',

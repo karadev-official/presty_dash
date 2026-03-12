@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('product_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('professional_profile_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
             $table->integer('position');
@@ -18,8 +18,8 @@ return new class extends Migration {
             $table->softDeletes();
             $table->timestamps();
 
-            $table->unique(['user_id', 'slug']);
-            $table->index(['user_id', 'is_active', 'is_online', 'position']);
+            $table->unique(['professional_profile_id', 'slug']);
+            $table->index(['professional_profile_id', 'is_active', 'is_online', 'position'], 'pro_ao_index');
         });
     }
 

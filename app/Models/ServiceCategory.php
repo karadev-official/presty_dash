@@ -14,9 +14,9 @@ class ServiceCategory extends Model
     protected $table = 'service_categories';
 
     protected $fillable = [
+        'professional_profile_id',
         'name',
         'slug',
-        'user_id',
         'is_active',
         'is_online',
         'position',
@@ -33,7 +33,7 @@ class ServiceCategory extends Model
     {
         static::creating(function ($category) {
             if (is_null($category->position)) {
-                $maxPosition = self::where('user_id', $category->user_id)->max('position');
+                $maxPosition = self::where('professional_profile_id', $category->professional_profile_id)->max('position');
                 $category->position = is_null($maxPosition) ? 0 : $maxPosition + 1;
             }
         });
@@ -58,8 +58,8 @@ class ServiceCategory extends Model
         return $this->hasMany(Service::class);
     }
 
-    public function user() : BelongsTo
+    public function professionalProfile() : BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(ProfessionalProfile::class);
     }
 }
