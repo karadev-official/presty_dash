@@ -20,14 +20,14 @@ class AppointmentServiceResource extends JsonResource
             'total' => $this->total,
             'notes' => $this->notes,
             'created_at' => $this->created_at,
-//            'updated_at' => $this->updated_at,
-
             'appointment_id' => $this->appointment_id,
             'service_id' => $this->service_id,
-            'options' => AppointmentServiceOptionResource::collection($this->options)
-
-
-//            'appointment' => new AppointmentResource($this->whenLoaded('appointment')),
+            'options' => AppointmentServiceOptionResource::collection($this->options),
+            'category' => [
+                'id' => $this->service->category->id,
+                'color' => $this->service->category->agenda_color,
+                'name' => $this->service->category->name,
+            ]
         ];
     }
 }

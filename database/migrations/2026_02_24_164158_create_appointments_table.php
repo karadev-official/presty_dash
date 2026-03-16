@@ -18,7 +18,7 @@ return new class extends Migration {
             // Date et heure
             $table->date('date')->comment('Date du rendez-vous');
             $table->time('start_time')->comment('Heure de début');
-            $table->time('end_time')->comment('Heure de fin');
+            $table->time('end_time')->nullable()->comment('Heure de fin');
             $table->integer('duration')->comment('Durée totale en minutes');
 
             // status

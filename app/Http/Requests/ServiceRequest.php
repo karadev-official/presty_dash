@@ -10,17 +10,20 @@ class ServiceRequest extends FormRequest
     public function rules(): array
     {
         return array_merge([
-            'name' => [$this->requiredIfPost(), 'string', 'max:255'],
-            'slug' => [$this->requiredIfPost(), 'string', 'max:255'],
-            'service_category_id' => [$this->requiredIfPost(), 'exists:service_categories,id'],
-            'description' => ['nullable', 'string', 'max:600'],
-            'duration' => ['required', 'integer', 'min:0'],
-            'price' => [$this->requiredIfPost(), 'numeric', 'min:0'],
-            'is_active' => ['sometimes', 'boolean'],
-            'is_online' => ['sometimes', 'boolean'],
-            'image_ids' => ['nullable', 'array'],
-            'option_groups' => ['sometimes', 'array'],
-        ], $this->optionGroupRules(), $this->optionRules());
+                'name' => [$this->requiredIfPost(), 'string', 'max:255'],
+                'slug' => [$this->requiredIfPost(), 'string', 'max:255'],
+                'service_category_id' => [$this->requiredIfPost(), 'exists:service_categories,id'],
+                'description' => ['nullable', 'string', 'max:600'],
+                'duration' => ['required', 'integer', 'min:0'],
+                'price' => [$this->requiredIfPost(), 'numeric', 'min:0'],
+                'is_active' => ['sometimes', 'boolean'],
+                'is_online' => ['sometimes', 'boolean'],
+                'image_ids' => ['nullable', 'array'],
+                'option_groups' => ['sometimes', 'array'],
+            ],
+            $this->optionGroupRules(),
+            $this->optionRules()
+        );
     }
 
     protected function optionGroupRules(): array

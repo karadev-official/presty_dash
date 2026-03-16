@@ -29,7 +29,17 @@ class CustomerController extends Controller
     public function show(Customer $customer)
     {
         $this->authorize('view', $customer);
-        return $this->success(new CustomerResource($customer));
+        $loyaltyProgram = $customer->professionalProfile->loyaltyProgram;
+        if ($loyaltyProgram?->is_active) {
+            LoyaltyCard::firstOrCreate([
+                'customer_id' => $customer->id,
+                'loyalty_program_id' => $loyaltyProgram->id,
+            ], [
+                'total_visits' => 0,
+                'is_active' => true,
+            ]);
+        }
+        return $this->success(new CustomerResource($customer->fresh()));
     }
 
     public function update(CustomerRequest $request, Customer $customer)
