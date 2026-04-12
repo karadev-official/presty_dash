@@ -20,6 +20,7 @@ use App\Http\Controllers\LoyaltyCardController;
 use App\Http\Controllers\LoyaltyProgramController;
 use App\Http\Controllers\LoyaltyRewardController;
 use App\Http\Controllers\PaymentMethodController;
+use App\Http\Controllers\PublicController;
 use App\Models\User;
 use Faker\Factory;
 use Illuminate\Http\Request;
@@ -194,5 +195,9 @@ Route::prefix('v1')->group(function () {
         Route::apiResource("/customers", CustomerController::class);
         Route::post("/customers/{customer}/toggleFavorite", [CustomerController::class, 'toggleFavorite']);
         Route::post("/customers/{customer}/toggleBlock", [CustomerController::class, 'toggleBlock']);
+
+        Route::prefix('public')->group(function () {
+            Route::get('pros', [PublicController::class, 'pros']);
+        });
     });
 });

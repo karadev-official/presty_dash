@@ -18,6 +18,7 @@ class ProfessionalProfileResource extends JsonResource
             'siret' => $this->siret,
             'description' => $this->description,
             'workplaces' => WorkplaceResource::collection($this->workplaces),
+            'pro_user_id' => $this->pro_user_id,
             'loyalty_program' => new LoyaltyProgramResource($this->loyaltyProgram)
         ];
     }
