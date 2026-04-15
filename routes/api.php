@@ -198,6 +198,7 @@ Route::prefix('v1')->group(function () {
 
         Route::prefix('public')->group(function () {
             Route::get('pros', [PublicController::class, 'pros']);
+            Route::get('pros/{id}', [PublicController::class, 'proById']);
         });
     });
 });

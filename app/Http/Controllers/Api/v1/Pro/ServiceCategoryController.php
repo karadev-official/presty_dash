@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1\Pro;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceCategoryRequest;
+use App\Http\Resources\ServiceCategoryResource;
 use App\Models\ServiceCategory;
 use Illuminate\Http\Request;
 
@@ -15,14 +16,10 @@ class ServiceCategoryController extends Controller
         $categories = ServiceCategory::with('services')->where("professional_profile_id", $request->user()->professionalProfile->id)
             ->orderBy('position')
             ->get();
-        $categories = $categories->map(function ($category) {
-            return $this->ServiceCategoryPayload($category);
-        });
-        return response()->json(
-            [
-                'categories' => $categories
-            ]
-        );
+
+        return response()->json([
+            'categories' => ServiceCategoryResource::collection($categories)
+        ]);
     }
 
     public function show(Request $request, ServiceCategory $category)

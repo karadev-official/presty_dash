@@ -54,12 +54,7 @@ class ServiceResource extends JsonResource
                     }),
                 ];
             }),
-            'images' => $this->images->map(function ($image) {
-                return [
-                    'id' => $image->id,
-                    'url' => $image->url,
-                ];
-            })
+            'images' => ImageResource::collection($this->images),
         ];
     }
 }

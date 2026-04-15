@@ -14,32 +14,30 @@ class PublicProResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'name' => $this->pro->name ?? 'Professionnel',
-            'profession' => $this->company_name ?? 'Non spécifié',
-            'category' => $this->specialty, // Ex: 'beauty', 'hair', etc.
-            'city' => $mainWorkplace->address->city ?? 'Non spécifié',
-            'address' => $mainWorkplace->address ?? null,
-            'lat' => $mainWorkplace->address->lat ?? null,
-            'lng' => $mainWorkplace->address->lng ?? null,
+
+            'name' => $this->company_name ?? $this->pro->name ?? 'Professionnel',
+
+            'profession' => $this->specialty ?? 'Non spécifié',
+
+            'city' => $mainWorkplace?->address?->city ?? 'Non spécifié',
+
+            // Coordonnées GPS pour le calcul de distance et la carte
+            'lat' => $mainWorkplace?->address?->lat ?? null,
+            'lng' => $mainWorkplace?->address?->lng ?? null,
 
             // Avatar du pro
-            'avatar' => $this->pro->avatar_url ?? $this->avatar_url ?? null,
-
-            // Note moyenne (à calculer selon votre système)
-            'rating' => $this->average_rating ?? 0,
-            'reviewCount' => $this->reviews_count ?? 0,
+            'avatarUrl' => $this->pro?->avatar_url ?? null,
 
             // Informations supplémentaires
-            'bio' => $this->bio ?? null,
-//            'phone' => $this->phone ?? null,
-            'email' => $this->pro->email ?? null,
+            'bio' => $this->description ?? null,
 
-            // Disponibilité
-            'is_available' => $this->is_available ?? true,
+            // Prestations vides pour l'instant (requis pour la recherche)
+            // Le front cherche dans pro.prestations?.some()
+            'prestations' => [],
 
-            // Dates
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            // Category vide pour l'instant (requis pour le filtrage)
+            // Le front filtre par category
+            'category' => null,
         ];
     }
 }

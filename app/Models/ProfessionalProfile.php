@@ -87,4 +87,27 @@ class ProfessionalProfile extends Model
             ->today()
             ->with(['customer', 'services', 'products']);
     }
+
+    public function scopeWithFullDetails($query)
+    {
+        return $query->with([
+            'pro',
+            'workplaces.address',
+            'serviceCategories' => function ($q) {
+                $q->where('is_active', true)->where('is_online', true);
+            },
+            'serviceCategories.services' => function ($q) {
+                $q->where('is_active', true)->where('is_online', true);
+            },
+            'serviceCategories.services.images',
+            'serviceCategories.services.optionGroups.options.image',
+            'productCategories' => function ($q) {
+                $q->where('is_active', true)->where('is_online', true);
+            },
+            'productCategories.products' => function ($q) {
+                $q->where('is_active', true)->where('is_online', true);
+            },
+            'productCategories.products.images',
+        ]);
+    }
 }
