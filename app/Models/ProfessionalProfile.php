@@ -36,6 +36,11 @@ class ProfessionalProfile extends Model
         return $this->hasMany(Workplace::class);
     }
 
+    public function availability(): HasOne
+    {
+        return $this->hasOne(Availability::class);
+    }
+
     /**
      * Rendez-vous du professionnel
      */

@@ -93,11 +93,6 @@ class Appointment extends Model
         return $this->hasMany(AppointmentPayment::class);
     }
 
-    public function loyaltyTransactions(): HasMany
-    {
-        return $this->hasMany(LoyaltyTransaction::class);
-    }
-
     // ========================================
     // ACCESSEURS (calculés depuis payments)
     // ========================================

@@ -8,15 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Availability extends Model
 {
-//    use HasFactory;
     protected $fillable = [
         'professional_profile_id',
         'timezone',
     ];
-
-//    protected $casts = [
-//        'professional_profile_id' => 'integer',
-//    ];
 
     public function professionalProfile() : BelongsTo
     {

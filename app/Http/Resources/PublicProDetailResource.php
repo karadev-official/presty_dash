@@ -16,7 +16,7 @@ class PublicProDetailResource extends JsonResource
             'profession' => $this->specialty ?? 'Non spécifié',
             'bio' => $this->description ?? null,
             'service_categories' => ServiceCategoryResource::collection($this->serviceCategories),
-            'product_categories' => ProductCategoryResource::collection($this->productCategories)
+            'product_categories' => ProductCategoryResource::collection($this->productCategories),
         ];
     }
 }
